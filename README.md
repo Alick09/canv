@@ -1,5 +1,6 @@
 # TODO
-1. git init
-2. resolve problem with vscode hints (ts interface not saves)
-3. animation (access to space options)
-4. object access to changing position (scale, angle)
+1. Interaction - mouse (move, scale, rotate??, select)
+1. Touch interaction - pinch and zoom, move, rotate?
+1. Preserve rotation
+1. Fixed place
+1. Select order (last, first)
