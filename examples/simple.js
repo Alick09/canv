@@ -1,38 +1,25 @@
 import {Space} from 'canv';
-
-const getDrawables = () => {
-    const objects = [];
-    for (let i = 0; i < 400; ++i){
-        const ix = i % 20;
-        const iy = 0 | (i / 20);
-        const x = (ix - 9.5) * 80;
-        const y = (iy - 9.5) * 80;
-        const isCenter = Math.abs(x) + Math.abs(y) < 81;
-        const size = 45;
-        objects.push({
-            x,
-            y,
-            draw(ctx){
-                ctx.beginPath();
-                ctx.fillStyle = isCenter ? '#f00' : '#000';
-                ctx.rect(-size/2, -size/2, size, size);
-                ctx.fill();
-                ctx.closePath();
-            }
-        });
-    }
-    return objects;
-}
+import {genRectGrid} from './utils/gen';
 
 
 window.onload = () => {
     const objects = [];
-    const s = Space(document.getElementById('canvas'), {animationTick: ()=>{
-        // space.scale *= 1.001;
-        // const da = 0.003;
-        // space.rotate.angle += da;
-        // objects.forEach(o => {o.rotate -= 10 * da});
+    let direction = 1;
+    const s = Space(document.getElementById('canvas'), {animationTick(ts){
+        this.set(({scale, angle}) => {
+            if (scale > 2)
+                direction = -1;
+            else if (scale < 0.7)
+                direction = 1;
+            return {
+                scale: (scale || 1) * (1 + direction * 0.001),
+                angle: (angle || 0) + 0.003
+            };
+        });
+        objects.forEach(o => {
+            o.set(({angle}) => ({angle: (angle || 0) - 0.03}));
+        })
     }});
-    getDrawables().forEach(d => objects.push(s.addDrawable(d)));
+    genRectGrid().forEach(d => objects.push(s.addDrawable(d)));
     s.launch();
 };

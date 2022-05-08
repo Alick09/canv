@@ -1,0 +1,46 @@
+export interface iPosition {
+    x: number;
+    y: number;
+};
+
+export interface iPositioning {
+    center?: iPosition;
+    angle?: number;
+    rotationCenter?: iPosition;
+    scale?: number;
+};
+
+export type tPositionChanger = (oldValue: iPositioning) => iPositioning;
+
+export const applyChanger = (pos: iPositioning, posToSet: iPositioning, changer: tPositionChanger) => {
+    const {center, angle, rotationCenter, scale} = changer(pos);
+    if (center)
+        posToSet.center = center;
+    if (angle)
+        posToSet.angle = angle;
+    if (scale)
+        posToSet.scale = scale;
+    if (rotationCenter)
+        posToSet.rotationCenter = rotationCenter;
+}
+
+const rotate = (point: iPosition, anchor: iPosition, angle: number): iPosition => {
+    if (angle == 0)
+        return point;
+    const vec = {x: point.x - anchor.x, y: point.y - anchor.y};
+    const length = Math.hypot(vec.x, vec.y);
+    if (length == 0)
+        return point;
+    const curAngle = Math.atan2(vec.y, vec.x);
+    const finAngle = curAngle + angle;
+    const newVec = {x: Math.cos(finAngle) * length, y: Math.sin(finAngle) * length};
+    return {x: anchor.x + newVec.x, y: anchor.y + newVec.y};
+}
+
+export const transform = (pos: iPosition, setting: iPositioning): iPosition => {
+    const {center={x: 0, y: 0}, scale=1.0, angle=0, rotationCenter={x: 0, y: 0}} = setting;
+    return rotate({
+        x: (pos.x - center.x) / scale,
+        y: (pos.y - center.y) / scale
+    }, rotationCenter, -angle);
+}

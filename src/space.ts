@@ -1,24 +1,16 @@
 import {createObject, iDrawable, iObject} from './drawable';
+import {tPositionChanger, iPositioning, applyChanger, iPosition, transform} from './positioning';
 
-
-interface iSpace {
+export interface iSpace {
+    canvas: HTMLCanvasElement;
+    objects: iObject[];
     addObject: (obj: iObject) => iObject;
     addDrawable: (drawable: iDrawable) => iObject;
     draw: () => void;
     launch: () => void;
+    set: (changer: tPositionChanger) => void;
+    transform: (pos: iPosition) => iPosition;
 };
-
-interface iPosition {
-    x: number;
-    y: number;
-}
-
-interface iPositioning {
-    center?: iPosition;
-    angle?: number;
-    rotationCenter?: iPosition;
-    scale?: number;
-}
 
 interface iSpaceOptions extends iPositioning {
     pixelRatio?: number;
@@ -27,13 +19,14 @@ interface iSpaceOptions extends iPositioning {
     animationTick?: (ts: number) => void;
 };
 
-const setupResizeHandler = (canvas: HTMLCanvasElement, {pixelRatio, onResize, setupAutoResize=true}: iSpaceOptions): void => {
+const setupResizeHandler = (space: iSpace, {pixelRatio, onResize, setupAutoResize=true}: iSpaceOptions): void => {
     if (setupAutoResize){
         if (!onResize){
             const ratio = pixelRatio || window.devicePixelRatio;
             onResize = () => {
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
+                space.canvas.width = space.canvas.offsetWidth * ratio;
+                space.canvas.height = space.canvas.offsetHeight * ratio;
+                space.draw();
             };
         }
         window.onresize = onResize;
@@ -47,8 +40,6 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
     if (ctx === null){
         throw TypeError("Can't get context2d from canvas");
     }
-
-    setupResizeHandler(canvas, options);
 
     const objects: iObject[] = [];
 
@@ -66,8 +57,27 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         }
     }
 
-    return {
+    const pos = {
+        center: {x: 0, y: 0},
+        scale: options.scale,
+        angle: options.angle,
+        rotationCenter: Object.assign({x: 0, y: 0}, options.rotationCenter)
+    }
+
+    const actualPos = () => {
+        return {...pos, center: {
+            x: canvas.width/2 - center.x + pos.center.x, 
+            y: canvas.height/2 - center.y + pos.center.y
+        }};
+    };
+
+    const center = options.center || {x: 0, y: 0};
+
+    const space = {
+        canvas,
+        objects,
         addObject(obj: iObject){
+            obj.parent = this;
             objects.push(obj);
             return obj;
         },
@@ -76,8 +86,7 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         },
         draw(){
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const center = options.center || {x: 0, y: 0};
-            prepare({...options, center: {x: canvas.width/2 - center.x, y: canvas.height/2 - center.y}});
+            prepare(actualPos());
             objects.forEach(o => {
                 ctx.save();
                 const pos = o.position();
@@ -91,13 +100,24 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
             if (!options.animationTick){
                 console.warn('Set animationTick in space options to make animation work. Ignoring launch.');
             } else {
+                const _space = this;
                 const tick = () => {
-                    options.animationTick?.call(this, 0);
+                    options.animationTick?.call(_space, 0);
                     this.draw();
                     requestAnimationFrame(tick);
                 }
                 requestAnimationFrame(tick);
             }
+        },
+        transform(point: iPosition) {
+            return transform(point, actualPos());
+        },
+        set(changer: tPositionChanger) {
+            applyChanger(pos, pos, changer);
         }
     }
+    
+    setupResizeHandler(space, options);
+
+    return space;
 }
