@@ -1,4 +1,4 @@
-import {Space, installSelection, SpriteDrawer} from 'canv';
+import {Space, SpriteDrawer} from 'canv';
 import { createGridCells } from './utils/gen';
 
 

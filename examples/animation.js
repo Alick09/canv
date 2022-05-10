@@ -35,17 +35,17 @@ const makeController = () => {
     return {
         x: 0, y: 0,
         onClick(pos) {
-            animatable[0].animate(function(ts){
+            animatable[0].animate({animation(ts){
                 const t = ts / 300;
                 this.position.scale = 1 + Math.sin(t);
                 return t < Math.PI;
-            });
-            animatable[1].animate(function(ts){
+            }});
+            animatable[1].animate({animation(ts){
                 const t = ts / 300;
                 this.position.center = {x: 400 + Math.cos(t) * 100, y: Math.sin(t) * 100};
                 return t < 2 * Math.PI;
-            });
-            animatable[2].animate(function(ts){
+            }});
+            animatable[2].animate({animation(ts){
                 this.data.forEach(p => {
                     p.length += (p.speed || 0);
                     p.speed = limitAbs((p.speed || 0) + (p.force || 0), 3);
@@ -55,8 +55,8 @@ const makeController = () => {
                     }
                     p.x = p.d.x * p.length;
                     p.y = p.d.y * p.length;
-                });
-                return true;
+                }});
+                return ts < 10000;
             });
         },
         ...circle(50, '#333')

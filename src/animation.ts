@@ -1,0 +1,1 @@
+export type tAnimationFunc = (ts: number) => boolean;

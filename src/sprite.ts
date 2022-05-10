@@ -1,3 +1,4 @@
+import { tAnimationFunc } from "./animation";
 import { iSpace } from "./space";
 
 interface iSize {
@@ -16,26 +17,43 @@ interface iCrop {
 type tScanDirection = 'horizontal' | 'vertical' | 'horizontal-inverse' | 'vertical-inverse';
 
 
-interface iSpriteDrawer {
+interface iRasterFrameProps {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+}
+
+type tFrameProps = iRasterFrameProps;
+
+interface iSpriteAnimation {
+    frameCount: number;
+    getFrame: (index: number) => tFrameProps
+    defaultIndex?: number;
+};
+
+interface iSpriteDrawerOptions {
     url?: string;
     content?: string;
     base64?: string;
-    patchSize?: iSize;
-    primaryScanDirection?: tScanDirection;
-    secondaryScanDirection?: tScanDirection;
     crop?: iCrop;
-    rows?: number[];
-    columns?: number[];
-    frameRate?: number;
-    svgAnimationIds?: string[];
     dataType?: string;
+    animationConfig?: iSpriteAnimation;
     size?: iSize;
     drawLoading?: (ctx: CanvasRenderingContext2D) => void;
     space?: iSpace;  // for redraw on load.
 };
 
+interface iSpriteDrawer {
+    loaded: boolean;
+    frame?: tFrameProps;
+    animationConfig?: iSpriteAnimation;
+    draw: (ctx: CanvasRenderingContext2D) => void;
+    animate: (frameRate: number, times?: number) => tAnimationFunc;
+}
 
-const getImageUrl = ({url, content, base64, dataType='image/svg+xml'}: iSpriteDrawer) => {
+
+const getImageUrl = ({url, content, base64, dataType='image/svg+xml'}: iSpriteDrawerOptions): string => {
     if (!url && !content && !base64)
         throw TypeError("You should initialize sprite drawer with url, content or base64");
 
@@ -51,9 +69,9 @@ const getImageUrl = ({url, content, base64, dataType='image/svg+xml'}: iSpriteDr
 
 
 export const SpriteDrawer = ({
-        patchSize, size={w: 0, h: 0}, drawLoading, space, crop={},
+        size={w: 0, h: 0}, drawLoading, space, crop={}, animationConfig,
         ...options
-    }: iSpriteDrawer) => 
+    }: iSpriteDrawerOptions): iSpriteDrawer => 
 {
     const img = new Image(size.w ? size.w : undefined, size.h ? size.h : undefined);
     const url = getImageUrl(options);
@@ -67,18 +85,53 @@ export const SpriteDrawer = ({
         ctx.closePath();
     });
 
-    const result = {
+    const drawImage = (ctx: CanvasRenderingContext2D, sprite: iSpriteDrawer) => {
+        const _crop = {
+            left: crop.left || 0,
+            top: crop.top || 0,
+            width: crop.width || 0,
+            height: crop.height || 0
+        };
+        let w = size.w, h = size.h;
+        if (sprite.frame) {
+            Object.assign(_crop, sprite.frame);
+            w = sprite.frame.width;
+            h = sprite.frame.height;
+        }
+        ctx.drawImage(
+            img, 
+            _crop.left, _crop.top, _crop.width, _crop.height, 
+            -w/2, -h/2, w, h
+        );
+    };
+
+    const result: iSpriteDrawer = {
         loaded: false,
+        frame: undefined,
+        animationConfig,
         draw(ctx: CanvasRenderingContext2D) {
             if (!this.loaded)
                 _drawLoading(ctx);
             else
-                ctx.drawImage(
-                    img, 
-                    crop.left || 0, crop.top || 0, crop.width || 0, crop.height || 0, 
-                    -size.w/2, -size.h/2, size.w, size.h
-                );
+                drawImage(ctx, this);
+        },
+        animate(frameRate: number, times?: number){
+            if (!this.animationConfig){
+                return (ts: number) => false;
+            }
+            const dt = 1000 / frameRate;
+            const frameCount = (this.animationConfig?.frameCount || 1);
+            return (ts: number) => {
+                const i = (0 | (ts / dt));
+                const index = i % frameCount;
+                this.frame = this.animationConfig?.getFrame(index);
+                return times === undefined || i / frameCount < times;
+            }
         }
+    }
+
+    if (animationConfig){
+        result.frame = animationConfig.getFrame(animationConfig.defaultIndex || 0);
     }
     
     img.onload = () => {

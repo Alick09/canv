@@ -1,3 +1,4 @@
+import { tAnimationFunc } from './animation';
 import {iPosition, iPositioning, transform} from './positioning';
 import {iSpace} from './space';
 
@@ -23,6 +24,11 @@ export interface iDrawable {
     onClick?: (pos: iPosition) => void;
 };
 
+interface iAnimateOptions {
+    animation: tAnimationFunc;
+    force?: boolean;
+    putToQueue?: boolean;
+}
 
 export interface iObject {
     parent?: iObject | iSpace;
@@ -38,9 +44,16 @@ export interface iObject {
     clickable: ()=>boolean;
     selected: (val?:boolean) => boolean;
     transform: (position: iPosition) => iPosition;
-    animate: (animation: (ts:number) => boolean, force?: boolean) => void;
-    applyAnimation: (ts: number) => boolean;
+    animate: (options: iAnimateOptions) => void;
+    applyAnimation: tAnimationFunc;
+    stopAnimation: (all?: boolean) => void;
 };
+
+interface iCurrentAnimation {
+    func: tAnimationFunc;
+    queue: tAnimationFunc[];
+    start: number;
+}
 
 
 export const createObject = (drawable: iDrawable): iObject => {
@@ -59,10 +72,19 @@ export const createObject = (drawable: iDrawable): iObject => {
     };
 
     const lastInside: iPosition = {x: 0, y: 0};
-    let currentAnimation = {
+    const currentAnimation: iCurrentAnimation = {
         func: (ts: number) => false,
-        start: 0
+        queue: [],
+        start: -1
     };
+
+    const setNextAnimation = (ts = -1) => {
+        const nextAnimation = currentAnimation.queue.shift();
+        if (nextAnimation){
+            currentAnimation.func = nextAnimation;
+            currentAnimation.start = ts;
+        }
+    }
 
     return {
         parent: undefined,
@@ -105,13 +127,21 @@ export const createObject = (drawable: iDrawable): iObject => {
             const point = this.parent ? this.parent.transform(position) : position;
             return transform(point, pos);
         },
-        animate(animation: (ts: number) => boolean, force=false) {
+        animate({animation, force=false, putToQueue=false}) {
             if (force || !this.inAnimationLoop){
                 this.inAnimationLoop = true;
                 currentAnimation.func = animation;
                 currentAnimation.start = -1;
                 this.getSpace().triggerAnimation();
+            } else if (putToQueue){
+                currentAnimation.queue.push(animation);
             }
+        },
+        stopAnimation(all=false){
+            if (all || currentAnimation.queue.length == 0)
+                this.inAnimationLoop = false;
+            else
+                setNextAnimation();
         },
         applyAnimation(ts: number){
             if (!this.inAnimationLoop)
@@ -120,8 +150,12 @@ export const createObject = (drawable: iDrawable): iObject => {
                 currentAnimation.start = ts;
             } else {
                 const alive = currentAnimation.func.call(this, ts - currentAnimation.start);
-                if (!alive)
-                    this.inAnimationLoop = false;
+                if (!alive){
+                    if (currentAnimation.queue.length == 0)
+                        this.inAnimationLoop = false;
+                    else
+                        setNextAnimation(ts);
+                }
             }
             return this.inAnimationLoop;
         }
