@@ -1,5 +1,5 @@
 import {createObject, iDrawable, iObject} from './drawable';
-import {tPositionChanger, iPositioning, applyChanger, iPosition, transform} from './positioning';
+import {iPositioning, iPosition, transform} from './positioning';
 
 export interface iSpace {
     canvas: HTMLCanvasElement;
@@ -8,8 +8,11 @@ export interface iSpace {
     addDrawable: (drawable: iDrawable) => iObject;
     draw: () => void;
     launch: () => void;
-    set: (changer: tPositionChanger) => void;
+    position: iPositioning;
+    triggerAnimation: () => void;
     transform: (pos: iPosition) => iPosition;
+    options: iSpaceOptions;
+    
 };
 
 interface iSpaceOptions extends iPositioning {
@@ -65,17 +68,35 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
     }
 
     const actualPos = () => {
-        return {...pos, center: {
-            x: canvas.width/2 - center.x + pos.center.x, 
-            y: canvas.height/2 - center.y + pos.center.y
+        return {...space.position, center: {
+            x: canvas.width/2 - center.x + space.position.center.x, 
+            y: canvas.height/2 - center.y + space.position.center.y
         }};
     };
 
     const center = options.center || {x: 0, y: 0};
 
+    let animationIsGoing = false;
+    const animateObjects = () => {
+        const ts = Date.now();
+        let animationAlive = false;
+        objects.forEach(o => {
+            if (o.applyAnimation(ts))
+                animationAlive = true;
+        });
+        if (animationAlive){
+            space.draw();
+            requestAnimationFrame(animateObjects);
+        }
+        else
+            animationIsGoing = false;
+    };
+
     const space = {
+        options,
         canvas,
         objects,
+        position: pos,
         addObject(obj: iObject){
             obj.parent = this;
             objects.push(obj);
@@ -89,20 +110,25 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
             prepare(actualPos());
             objects.forEach(o => {
                 ctx.save();
-                const pos = o.position();
-                prepare({center: pos, ...pos});
+                prepare(o.position);
                 o.draw(ctx);
                 ctx.restore();
             });
             ctx.resetTransform();
         },
+        triggerAnimation() {
+            if (!animationIsGoing){
+                animationIsGoing = true;
+                requestAnimationFrame(animateObjects);
+            }
+        },
         launch() {
-            if (!options.animationTick){
+            if (!this.options.animationTick){
                 console.warn('Set animationTick in space options to make animation work. Ignoring launch.');
             } else {
                 const _space = this;
                 const tick = () => {
-                    options.animationTick?.call(_space, 0);
+                    this.options.animationTick?.call(_space, 0);
                     this.draw();
                     requestAnimationFrame(tick);
                 }
@@ -111,9 +137,6 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         },
         transform(point: iPosition) {
             return transform(point, actualPos());
-        },
-        set(changer: tPositionChanger) {
-            applyChanger(pos, pos, changer);
         }
     }
     

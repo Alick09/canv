@@ -19,4 +19,50 @@ export const genRectGrid = () => {
         }
     }
     return objects;
-}
+};
+
+
+export const createGridCells = ({count=20, mainStep=100, secondaryDivisions=2}) => {
+    const inf_ = count * mainStep;
+    const line = ({ctx, pos, width, color='#888', horizontal=true}) => {
+        ctx.beginPath();
+        ctx.lineWidth = width;
+        ctx.strokeStyle = color;
+        if (horizontal){
+            ctx.moveTo(-inf_, pos);
+            ctx.lineTo(inf_, pos);
+        } else {
+            ctx.moveTo(pos, -inf_);
+            ctx.lineTo(pos, inf_);
+        }
+        ctx.stroke();
+        ctx.closePath();
+    }
+    return {
+        x: 0, y: 0,
+        draw(ctx){
+            for (let i = -count; i <= count; ++i){
+                let s = mainStep * i;
+                line({ctx, pos: s, width: 2, horizontal: true});
+                line({ctx, pos: s, width: 2, horizontal: false});
+                if (i < count){
+                    for (let j = 1; j < secondaryDivisions; ++j){
+                        const p = j / secondaryDivisions;
+                        const s_ = s + p * mainStep;
+                        line({ctx, pos: s_, color: '#ccc', width: 1, horizontal: true});
+                        line({ctx, pos: s_, color: '#ccc', width: 1, horizontal: false});
+                    }
+                }
+            }
+        }
+    }
+};
+
+
+export const range = (from_, to_, step = 1) => {
+    const result = [];
+    for (let i = from_; i < to_; i += step) {
+        result.push(i);
+    }
+    return result;
+};

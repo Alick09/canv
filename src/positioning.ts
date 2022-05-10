@@ -10,20 +10,6 @@ export interface iPositioning {
     scale?: number;
 };
 
-export type tPositionChanger = (oldValue: iPositioning) => iPositioning;
-
-export const applyChanger = (pos: iPositioning, posToSet: iPositioning, changer: tPositionChanger) => {
-    const {center, angle, rotationCenter, scale} = changer(pos);
-    if (center)
-        posToSet.center = center;
-    if (angle)
-        posToSet.angle = angle;
-    if (scale)
-        posToSet.scale = scale;
-    if (rotationCenter)
-        posToSet.rotationCenter = rotationCenter;
-}
-
 const rotate = (point: iPosition, anchor: iPosition, angle: number): iPosition => {
     if (angle == 0)
         return point;

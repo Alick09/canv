@@ -3,23 +3,19 @@ import {genRectGrid} from './utils/gen';
 
 
 window.onload = () => {
-    const objects = [];
     let direction = 1;
     const s = Space(document.getElementById('canvas'), {animationTick(ts){
-        this.set(({scale, angle}) => {
-            if (scale > 2)
-                direction = -1;
-            else if (scale < 0.7)
-                direction = 1;
-            return {
-                scale: (scale || 1) * (1 + direction * 0.001),
-                angle: (angle || 0) + 0.003
-            };
-        });
-        objects.forEach(o => {
-            o.set(({angle}) => ({angle: (angle || 0) - 0.03}));
+        const {scale, angle} = this.position;
+        if (scale > 2)
+            direction = -1;
+        else if (scale < 0.7)
+            direction = 1;
+        this.position.scale = (scale || 1) * (1 + direction * 0.001);
+        this.position.angle = (angle || 0) + 0.003;
+        this.objects.forEach(o => {
+            o.position.angle = (o.position.angle || 0) - 0.03;
         })
     }});
-    genRectGrid().forEach(d => objects.push(s.addDrawable(d)));
+    genRectGrid().forEach(d => s.addDrawable(d));
     s.launch();
 };

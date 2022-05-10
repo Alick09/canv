@@ -7,12 +7,13 @@ interface iFind {
     pos: iPosition;
     filter?: (obj: iObject) => boolean;
     getFirst?: boolean;
+    prepare?: (obj: iObject) => boolean;
 }
 
-export const findUnderTouch = ({space, pos, filter, getFirst=false} : iFind): iObject | null => {
+export const findUnderTouch = ({space, pos, filter, prepare, getFirst=false} : iFind): iObject | null => {
     let result: iObject | null = null;
     space.objects.forEach(o => {
-        o.selected(false);
+        prepare ? prepare(o) : null;
         if ((!getFirst || result == null) && (!filter || filter(o)) && o.checkInside(pos))
             result = o;
     });
