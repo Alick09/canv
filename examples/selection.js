@@ -1,4 +1,4 @@
-import {Space, installSelection} from 'canv';
+import {Space, installSelection, installCanvasControll} from 'canv';
 import {genRectGrid} from './utils/gen';
 
 
@@ -10,5 +10,6 @@ window.onload = () => {
         ...d
     }));
     installSelection(s);
+    installCanvasControll(s);
     s.draw();
 };

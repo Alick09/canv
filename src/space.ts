@@ -4,6 +4,7 @@ import {iPositioning, iPosition, transform} from './positioning';
 export interface iSpace {
     canvas: HTMLCanvasElement;
     objects: iObject[];
+    pixelRatio: number;
     addObject: (obj: iObject) => iObject;
     addDrawable: (drawable: iDrawable) => iObject;
     draw: () => void;
@@ -22,10 +23,11 @@ interface iSpaceOptions extends iPositioning {
     animationTick?: (ts: number) => void;
 };
 
-const setupResizeHandler = (space: iSpace, {pixelRatio, onResize, setupAutoResize=true}: iSpaceOptions): void => {
+const setupResizeHandler = (space: iSpace, {pixelRatio, onResize, setupAutoResize=true}: iSpaceOptions): number => {
+    let ratio = 1;
     if (setupAutoResize){
         if (!onResize){
-            const ratio = pixelRatio || window.devicePixelRatio;
+            ratio = pixelRatio || window.devicePixelRatio;
             onResize = () => {
                 space.canvas.width = space.canvas.offsetWidth * ratio;
                 space.canvas.height = space.canvas.offsetHeight * ratio;
@@ -35,6 +37,7 @@ const setupResizeHandler = (space: iSpace, {pixelRatio, onResize, setupAutoResiz
         window.onresize = onResize;
         onResize();
     }
+    return ratio;
 }
 
 export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace => 
@@ -46,9 +49,11 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
 
     const objects: iObject[] = [];
 
-    const prepare = ({center, angle, rotationCenter, scale}: iPositioning) => {
+    const prepare = ({center, angle, rotationCenter, scale}: iPositioning, shift?: iPosition) => {
         if (center)
             ctx.translate(center.x, center.y);
+        if (shift)
+            ctx.translate(shift.x, shift.y);
         if (scale)
             ctx.scale(scale, scale);
         if (angle){
@@ -68,13 +73,23 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
     }
 
     const actualPos = () => {
-        return {...space.position, center: {
-            x: canvas.width/2 - center.x + space.position.center.x, 
-            y: canvas.height/2 - center.y + space.position.center.y
-        }};
+        // return {...space.position, center: {
+        //     x: center.x + space.position.center.x, 
+        //     y: center.y + space.position.center.y
+        // }};
+        const pos = space.position;
+        const scale = (space.position.scale || 1) * space.pixelRatio;
+        return {
+            ...pos, scale,
+            center: {x: pos.center.x * scale, y: pos.center.y * scale}
+        };
     };
 
     const center = options.center || {x: 0, y: 0};
+    const shift = () => {
+        const scale = (space.position.scale || 1) * space.pixelRatio;
+        return {x: canvas.width/2 - scale * center.x, y: canvas.height/2 - scale * center.y}
+    }
 
     let animationIsGoing = false;
     const animateObjects = () => {
@@ -96,6 +111,7 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         options,
         canvas,
         objects,
+        pixelRatio: 1,
         position: pos,
         addObject(obj: iObject){
             obj.parent = this;
@@ -107,7 +123,7 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         },
         draw(){
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            prepare(actualPos());
+            prepare(actualPos(), shift());
             objects.forEach(o => {
                 ctx.save();
                 prepare(o.position);
@@ -136,11 +152,11 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
             }
         },
         transform(point: iPosition) {
-            return transform(point, actualPos());
+            return transform(point, actualPos(), shift());
         }
     }
     
-    setupResizeHandler(space, options);
+    space.pixelRatio = setupResizeHandler(space, options);
 
     return space;
 }

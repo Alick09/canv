@@ -5,10 +5,12 @@ import { findUnderTouch } from "./search";
 import { addPosEvenListener } from "./events";
 
 interface iChooseOptions {
-    firstIfMany: boolean
+    firstIfMany?: boolean
 }
 
-export const installSelection = (space: iSpace, {firstIfMany = false}: iChooseOptions) => {
+export const installSelection = (space: iSpace, options?: iChooseOptions) => {
+    options = options || {firstIfMany: false};
+    const {firstIfMany} = options;
     addPosEvenListener(space, 'click', (pos: iPosition) => {
         let result = findUnderTouch({
             space, pos, getFirst: firstIfMany, filter: o=>o.selectable,
@@ -25,7 +27,9 @@ export const installSelection = (space: iSpace, {firstIfMany = false}: iChooseOp
 };
 
 
-export const installClicks = (space: iSpace, {firstIfMany = false}: iChooseOptions) => {
+export const installClicks = (space: iSpace, options?: iChooseOptions) => {
+    options = options || {firstIfMany: false};
+    const {firstIfMany} = options;
     addPosEvenListener(space, 'click', (pos: iPosition) => {
         let result = findUnderTouch({
             space, pos, getFirst: firstIfMany, filter: o=>o.clickable(),

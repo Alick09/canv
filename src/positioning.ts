@@ -23,10 +23,10 @@ const rotate = (point: iPosition, anchor: iPosition, angle: number): iPosition =
     return {x: anchor.x + newVec.x, y: anchor.y + newVec.y};
 }
 
-export const transform = (pos: iPosition, setting: iPositioning): iPosition => {
+export const transform = (pos: iPosition, setting: iPositioning, shift?: iPosition): iPosition => {
     const {center={x: 0, y: 0}, scale=1.0, angle=0, rotationCenter={x: 0, y: 0}} = setting;
     return rotate({
-        x: (pos.x - center.x) / scale,
-        y: (pos.y - center.y) / scale
+        x: (pos.x - center.x - (shift?.x || 0)) / scale,
+        y: (pos.y - center.y - (shift?.y || 0)) / scale
     }, rotationCenter, -angle);
 }
