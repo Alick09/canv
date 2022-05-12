@@ -3,3 +3,4 @@ node_modules
 *.tgz
 examples/package.json
 examples/webpack.config.js
+.vscode
