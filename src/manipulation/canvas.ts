@@ -16,13 +16,15 @@ interface iTouchPosition {
     center?: iPosition;
     rotate?: number;
     distance?: number;
+    count: number;
 }
 
 const installTouchEvents = (space: iSpace, {startMove, endMove, move, scale, rotate}: iTouchEventOptions) => {
     const position: iTouchPosition = {
         center: undefined,
         rotate: undefined,
-        distance: undefined
+        distance: undefined,
+        count: 0
     }
     const canvasPos = space.canvas.getBoundingClientRect();
     const getPosition = (touches: TouchList) => {
@@ -36,7 +38,8 @@ const installTouchEvents = (space: iSpace, {startMove, endMove, move, scale, rot
         const accum = firstTwo.reduce((acc, t) => ({x: acc.x + t.x, y: acc.y + t.y}), {x: 0, y: 0});
         const twoConf: iTouchPosition = {
             distance: undefined,
-            rotate: undefined
+            rotate: undefined,
+            count: firstTwo.length
         };
         if (firstTwo.length > 1){
             const d = {x: firstTwo[0].x - firstTwo[1].x, y: firstTwo[0].y - firstTwo[1].y};
@@ -59,8 +62,11 @@ const installTouchEvents = (space: iSpace, {startMove, endMove, move, scale, rot
             startMove(pos.center);
         else if (!pos.center && position.center)
             endMove();
-        else if (pos.center && position.center)
+        else if (pos.center && position.center){
+            if (pos.count !== position.count)
+                startMove(pos.center);
             move(pos.center);
+        }
         
         Object.assign(position, pos);
     }
