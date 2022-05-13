@@ -1,7 +1,12 @@
 {
   "name": "canv",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "canvas interactive tool",
+  "homepage": "https://github.com/Alick09/canv#readme",
+  "bugs": {
+    "url": "https://github.com/Alick09/canv/issues"
+  },
+  "repository": "github:Alick09/canv",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": ["dist"],
@@ -18,7 +23,7 @@
     "pinch"
   ],
   "author": "Abdulla Gaibullaev",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "devDependencies": {
     "ts-loader": "^9.3.0",
     "typescript": "^4.6.4",
