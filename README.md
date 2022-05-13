@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/resources/logo.svg" alt="Canv's logo" width="300"/>
+  <img src="https://raw.githubusercontent.com/Alick09/canv/main/docs/resources/logo.svg" alt="Canv's logo" width="300"/>
 </p>
 
 
