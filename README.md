@@ -2,6 +2,11 @@
   <img src="https://raw.githubusercontent.com/Alick09/canv/main/docs/resources/logo.svg" alt="Canv's logo" width="300"/>
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/npm/v/canv" alt="npm" />
+  <img src="https://img.shields.io/bundlephobia/minzip/canv" alt="npm bundle size" />
+  <img src="https://img.shields.io/github/last-commit/Alick09/canv" alt="GitHub last commit" />
+</p>
 
 
 # Introduction
