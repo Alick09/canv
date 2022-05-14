@@ -27,7 +27,7 @@ const setupResizeHandler = (space: iSpace, {pixelRatio, onResize, setupAutoResiz
     let ratio = 1;
     if (setupAutoResize){
         if (!onResize){
-            ratio = pixelRatio || window.devicePixelRatio;
+            ratio = pixelRatio || Math.ceil(window.devicePixelRatio);
             onResize = () => {
                 space.canvas.width = space.canvas.offsetWidth * ratio;
                 space.canvas.height = space.canvas.offsetHeight * ratio;
@@ -73,10 +73,6 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
     }
 
     const actualPos = () => {
-        // return {...space.position, center: {
-        //     x: center.x + space.position.center.x, 
-        //     y: center.y + space.position.center.y
-        // }};
         const pos = space.position;
         const scale = (space.position.scale || 1) * space.pixelRatio;
         return {
@@ -152,7 +148,8 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
             }
         },
         transform(point: iPosition) {
-            return transform(point, actualPos(), shift());
+            const scale = this.pixelRatio;
+            return transform({x: point.x * scale, y: point.y * scale}, actualPos(), shift());
         }
     }
     

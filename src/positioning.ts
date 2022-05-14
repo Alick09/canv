@@ -15,7 +15,7 @@ const rotate = (point: iPosition, anchor: iPosition, angle: number): iPosition =
         return point;
     const vec = {x: point.x - anchor.x, y: point.y - anchor.y};
     const length = Math.hypot(vec.x, vec.y);
-    if (length == 0)
+    if (length < 1)
         return point;
     const curAngle = Math.atan2(vec.y, vec.x);
     const finAngle = curAngle + angle;

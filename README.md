@@ -4,6 +4,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/npm/v/canv" alt="npm" />
+  <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/Alick09/canv">
   <img src="https://img.shields.io/bundlephobia/minzip/canv" alt="npm bundle size" />
   <img src="https://img.shields.io/github/last-commit/Alick09/canv" alt="GitHub last commit" />
 </p>
@@ -116,9 +117,11 @@ So there are several methods for installing this methods:
 
 
 # Contribution
-To make contribution you can create an issue or make a pull request with fix or feature. Stars and forks are also very appreciated.
 
-## Known issues
-- Performance on mobile devices (laggy beaviour, see map example)
-- Demo page
-- fixedOrientation and fixedPosition is not working (add fixedScale)
+1. `npm uninstall canv` if you've installed it already
+1. git clone this repo
+1. run `npm i && npm run build` (or `npm run watch`)
+1. run `npm link`
+1. then you can import this library usual way `import {Space} from 'canv';`
+
+Here are the list of known issues: <a href="https://github.com/Alick09/canv/issues">Canv issues</a>

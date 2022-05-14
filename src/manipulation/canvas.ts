@@ -1,4 +1,4 @@
-import { iPosition } from "../positioning";
+import { iPosition, transform } from "../positioning";
 import { iSpace } from "../space";
 import { addPosEvenListener } from "./events";
 
@@ -9,7 +9,7 @@ interface iTouchEventOptions {
     endMove: () => void;
     move: tPosHandler;
     scale: (factor: number) => void;
-    rotate: (dAngle: number) => void;
+    rotate: (dAngle: number, rotationCenter: iPosition) => void;
 }
 
 interface iTouchPosition {
@@ -57,7 +57,7 @@ const installTouchEvents = (space: iSpace, {startMove, endMove, move, scale, rot
         if (position.distance && pos.distance)
             scale(pos.distance / position.distance);
         if (position.rotate && pos.rotate)
-            rotate(pos.rotate - position.rotate);
+            rotate(pos.rotate - position.rotate, space.transform(pos.center));
         if (pos.center && !position.center)
             startMove(pos.center);
         else if (!pos.center && position.center)
@@ -82,6 +82,15 @@ const installTouchEvents = (space: iSpace, {startMove, endMove, move, scale, rot
 
 export const installCanvasControll = (space: iSpace) => {
     space.canvas.style.touchAction = 'none';
+    space.canvas.style.userSelect = 'none';
+    `
+    -webkit-touch-callout:none;
+                -webkit-user-select:none;
+                -khtml-user-select:none;
+                -moz-user-select:none;
+                -ms-user-select:none;
+                user-select:none;
+                `
     const config = {
         startPos: {x: 0, y: 0},
         startCanvPos: {x: 0, y: 0},
@@ -112,10 +121,10 @@ export const installCanvasControll = (space: iSpace) => {
     };
     const scale = (factor: number) => {
         space.position.scale = (space.position.scale || 1) * factor;
-        const center = space.position.center;
         space.draw();
     };
-    const rotate = (dAngle: number) => {
+    const rotate = (dAngle: number, rotationCenter: iPosition) => {
+        space.position.rotationCenter = rotationCenter;
         space.position.angle = (space.position.angle || 0) + dAngle;
         space.draw();
     };

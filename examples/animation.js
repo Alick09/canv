@@ -1,4 +1,4 @@
-import {Space, installSelection, installClicks, SpriteDrawer} from 'canv';
+import {Space, installCanvasControll, installClicks, SpriteDrawer} from 'canv';
 import { createGridCells, range } from './utils/gen';
 import { circle } from './utils/simpleObjects';
 
@@ -55,9 +55,9 @@ const makeController = () => {
                     }
                     p.x = p.d.x * p.length;
                     p.y = p.d.y * p.length;
-                }});
+                });
                 return ts < 10000;
-            });
+            }});
         },
         ...circle(50, '#333')
     }
@@ -72,5 +72,6 @@ window.onload = () => {
     animatable.push(s.addDrawable(makeObject(0, -500)));
     s.addDrawable(makeController());
     installClicks(s, {});
+    installCanvasControll(s);
     s.draw();
 };

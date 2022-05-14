@@ -1,6 +1,6 @@
 {
   "name": "canv",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "canvas interactive tool",
   "homepage": "https://github.com/Alick09/canv#readme",
   "bugs": {
@@ -9,7 +9,9 @@
   "repository": "github:Alick09/canv",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "webpack",
     "watch": "webpack --watch",
