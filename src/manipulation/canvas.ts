@@ -1,4 +1,5 @@
-import { iPosition, transform } from "../positioning";
+import { iPoint, Point } from "../point";
+import { changeRotationCenter, iPosition, transform } from "../positioning";
 import { iSpace } from "../space";
 import { addPosEvenListener } from "./events";
 
@@ -17,6 +18,12 @@ interface iTouchPosition {
     rotate?: number;
     distance?: number;
     count: number;
+}
+
+interface iCanvasControllOptions {
+    ctrlWheelRotate?: boolean;
+    scaleForce?: number;
+    rotateForce?: number;
 }
 
 const installTouchEvents = (space: iSpace, {startMove, endMove, move, scale, rotate}: iTouchEventOptions) => {
@@ -57,15 +64,16 @@ const installTouchEvents = (space: iSpace, {startMove, endMove, move, scale, rot
         if (position.distance && pos.distance)
             scale(pos.distance / position.distance);
         if (position.rotate && pos.rotate)
-            rotate(pos.rotate - position.rotate, space.transform(pos.center));
-        if (pos.center && !position.center)
+            rotate(pos.rotate - position.rotate, pos.center);
+        else if (pos.center && !position.center)
             startMove(pos.center);
         else if (!pos.center && position.center)
             endMove();
         else if (pos.center && position.center){
             if (pos.count !== position.count)
                 startMove(pos.center);
-            move(pos.center);
+            else
+                move(pos.center);
         }
         
         Object.assign(position, pos);
@@ -80,38 +88,35 @@ const installTouchEvents = (space: iSpace, {startMove, endMove, move, scale, rot
     };
 };
 
-export const installCanvasControll = (space: iSpace) => {
+interface iCanvasControllConfig {
+    startPos: iPosition;
+    startCanvPos: iPoint;
+    moving: boolean;
+}
+
+export const installCanvasControll = (space: iSpace, options?: iCanvasControllOptions) => {
     space.canvas.style.touchAction = 'none';
     space.canvas.style.userSelect = 'none';
-    `
-    -webkit-touch-callout:none;
-                -webkit-user-select:none;
-                -khtml-user-select:none;
-                -moz-user-select:none;
-                -ms-user-select:none;
-                user-select:none;
-                `
-    const config = {
+    const options_ = options || {};
+
+    const config: iCanvasControllConfig = {
         startPos: {x: 0, y: 0},
-        startCanvPos: {x: 0, y: 0},
+        startCanvPos: Point({x: 0, y: 0}),
         moving: false,
     };
 
     // pos = (curPos - startPos)/scale + canvStartPos
-
+    
     const startMove = (pos: iPosition) => {
         config.startPos = pos;
-        config.startCanvPos = space.position.center || {x: 0, y: 0};
+        config.startCanvPos = Point(space.position.center || {x: 0, y: 0});
         config.moving = true;
         space.draw();
     };
     const move = (pos: iPosition) => {
         if (config.moving){
-            const scale = space.position.scale || 1;
-            space.position.center = {
-                x: config.startCanvPos.x + (pos.x - config.startPos.x) / scale,
-                y: config.startCanvPos.y + (pos.y - config.startPos.y) / scale,
-            };
+            const scale = (space.position.scale || 1);
+            space.position.center = config.startCanvPos.add(Point(pos).sub(config.startPos).mul(1/scale));
         }
         space.draw();
     };
@@ -124,12 +129,20 @@ export const installCanvasControll = (space: iSpace) => {
         space.draw();
     };
     const rotate = (dAngle: number, rotationCenter: iPosition) => {
-        space.position.rotationCenter = rotationCenter;
+        changeRotationCenter(space.transform(rotationCenter), space.position);
         space.position.angle = (space.position.angle || 0) + dAngle;
         space.draw();
     };
+
+    const scaleForce = options_.scaleForce || 0.05;
+    const rotateForce = options_.rotateForce || 0.02;
     space.canvas.addEventListener('wheel', (e) => {
-        scale(e.deltaY > 0.1 ? 0.95 : e.deltaY < -0.1 ? 1.05: 1);
+        if (e.ctrlKey && options_.ctrlWheelRotate){
+            const dAngle = e.deltaY > 0.1 ? rotateForce : e.deltaY < -0.1 ? -rotateForce: 0;
+            rotate(dAngle, {x: e.offsetX, y: e.offsetY});
+        } else {
+            scale(e.deltaY > 0.1 ? 1 - scaleForce : e.deltaY < -0.1 ? (1/(1 - scaleForce)): 1);
+        }
         e.preventDefault();
     });
     addPosEvenListener(space, 'mousedown', startMove);

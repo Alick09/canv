@@ -1,5 +1,5 @@
 import {createObject, iDrawable, iObject} from './drawable';
-import {iPositioning, iPosition, transform} from './positioning';
+import {iPositioning, iPosition, transform, prepareContext} from './positioning';
 
 export interface iSpace {
     canvas: HTMLCanvasElement;
@@ -48,22 +48,6 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
     }
 
     const objects: iObject[] = [];
-
-    const prepare = ({center, angle, rotationCenter, scale}: iPositioning, shift?: iPosition) => {
-        if (center)
-            ctx.translate(center.x, center.y);
-        if (shift)
-            ctx.translate(shift.x, shift.y);
-        if (scale)
-            ctx.scale(scale, scale);
-        if (angle){
-            if (rotationCenter)
-                ctx.translate(rotationCenter.x, rotationCenter.y);
-            ctx.rotate(angle);
-            if (rotationCenter)
-                ctx.translate(-rotationCenter.x, -rotationCenter.y);
-        }
-    }
 
     const pos = {
         center: {x: 0, y: 0},
@@ -119,10 +103,9 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         },
         draw(){
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            prepare(actualPos(), shift());
+            prepareContext(ctx, actualPos(), shift());
             objects.forEach(o => {
                 ctx.save();
-                prepare(o.position);
                 o.draw(ctx);
                 ctx.restore();
             });

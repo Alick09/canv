@@ -1,5 +1,5 @@
 import { tAnimationFunc } from './animation';
-import {iPosition, iPositioning, transform} from './positioning';
+import {iPosition, iPositioning, prepareContext, transform} from './positioning';
 import {iSpace} from './space';
 
 
@@ -94,6 +94,7 @@ export const createObject = (drawable: iDrawable): iObject => {
         position: pos,
         data: drawable.data,
         draw(ctx: CanvasRenderingContext2D){
+            prepareContext(ctx, this.position);
             return drawable.draw.call(this, ctx);
         },
         getSpace(){
