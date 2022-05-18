@@ -1,4 +1,4 @@
-import {Space, SpriteDrawer, installCanvasControll} from 'canv';
+import {Space, installCanvasControll} from 'canv';
 import { createGridCells } from './utils/gen';
 import {circle} from './utils/simpleObjects';
 
@@ -14,10 +14,10 @@ const makeImage = (x, y, spriteDrawer) => {
 }
 
 
-window.onload = () => {
-    const s = Space(document.getElementById('canvas'), {scale: 1, center: {x: 0, y: 100}, pixelRatio: 1});
+export const mapDemo = (canvas) => {
+    const s = Space(canvas, {scale: 1, center: {x: 0, y: 100}, pixelRatio: 1});
     s.addDrawable(createGridCells({mainStep: 100, count: 2}));
     s.addDrawable({x: 0, y: 0, scale: 2, ...circle(10, 'red')});
-    installCanvasControll(s, {ctrlWheelRotate: true});
+    installCanvasControll(s);
     s.draw();
 };

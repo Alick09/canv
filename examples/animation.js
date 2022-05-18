@@ -64,14 +64,14 @@ const makeController = () => {
 }
 
 
-window.onload = () => {
-    const s = Space(document.getElementById('canvas'), {scale: 0.6});
+export const animationDemo = (canvas) => {
+    const s = Space(canvas, {scale: 0.6});
     s.addDrawable(createGridCells({mainStep: 200}));
     animatable.push(s.addDrawable(makeObject(-500, 0)));
     animatable.push(s.addDrawable(makeObject(500, 0)));
     animatable.push(s.addDrawable(makeObject(0, -500)));
     s.addDrawable(makeController());
     installClicks(s, {});
-    installCanvasControll(s);
+    installCanvasControll(s, {wheelRotate: false});
     s.draw();
 };

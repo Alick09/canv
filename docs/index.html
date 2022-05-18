@@ -14,10 +14,37 @@
             #canvas {
                 flex-grow: 1;
             }
+            select {
+                font-size: 1.5em;
+                padding: 5px;
+                border: 2px black solid;
+                flex-grow: 1;
+            }
+            header {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+            }
+            a {
+                margin: 0 20px;
+                font-weight: bold;
+                font-family: monospace;
+                font-size: 1.5em;
+            }
         </style>
     </head>
     <body>
-        <div>Some testing title</div>
+        <header>
+            <select id="demo-selector" value="animation">
+                <option value="simple">Simple</option>
+                <option value="animation">Animation</option>
+                <option value="selection">Selection</option>
+                <option value="sprite">Sprite</option>
+                <option value="spriteAnimation">Sprite animation</option>
+                <option value="map" selected>Map</option>
+            </select>
+            <a href="https://github.com/Alick09/canv">Github</a>
+        </header>
         <canvas id="canvas"></canvas>
         <script src="index.js"></script>
     </body>

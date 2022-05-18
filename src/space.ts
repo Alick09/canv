@@ -13,7 +13,8 @@ export interface iSpace {
     triggerAnimation: () => void;
     transform: (pos: iPosition) => iPosition;
     options: iSpaceOptions;
-    
+    stopAnimation: () => void;
+    reset: () => void;
 };
 
 interface iSpaceOptions extends iPositioning {
@@ -47,8 +48,6 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         throw TypeError("Can't get context2d from canvas");
     }
 
-    const objects: iObject[] = [];
-
     const pos = {
         center: {x: 0, y: 0},
         scale: options.scale,
@@ -61,7 +60,7 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         const scale = (space.position.scale || 1) * space.pixelRatio;
         return {
             ...pos, scale,
-            center: {x: pos.center.x * scale, y: pos.center.y * scale}
+            center: {x: (pos.center?.x || 0) * scale, y: (pos.center?.y || 0) * scale}
         };
     };
 
@@ -75,7 +74,7 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
     const animateObjects = () => {
         const ts = Date.now();
         let animationAlive = false;
-        objects.forEach(o => {
+        space.objects.forEach(o => {
             if (o.applyAnimation(ts))
                 animationAlive = true;
         });
@@ -87,15 +86,15 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
             animationIsGoing = false;
     };
 
-    const space = {
+    const space: iSpace = {
         options,
         canvas,
-        objects,
+        objects: [],
         pixelRatio: 1,
         position: pos,
         addObject(obj: iObject){
             obj.parent = this;
-            objects.push(obj);
+            this.objects.push(obj);
             return obj;
         },
         addDrawable(drawable: iDrawable){
@@ -104,7 +103,7 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         draw(){
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             prepareContext(ctx, actualPos(), shift());
-            objects.forEach(o => {
+            this.objects.forEach(o => {
                 ctx.save();
                 o.draw(ctx);
                 ctx.restore();
@@ -123,16 +122,32 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
             } else {
                 const _space = this;
                 const tick = () => {
-                    this.options.animationTick?.call(_space, 0);
-                    this.draw();
-                    requestAnimationFrame(tick);
+                    if (this.options.animationTick){
+                        this.options.animationTick.call(_space, 0);
+                        this.draw();
+                        requestAnimationFrame(tick);
+                    }
                 }
                 requestAnimationFrame(tick);
             }
         },
+        stopAnimation() {
+            this.options.animationTick = undefined;
+        },
         transform(point: iPosition) {
             const scale = this.pixelRatio;
             return transform({x: point.x * scale, y: point.y * scale}, actualPos(), shift());
+        },
+        reset(){
+            this.objects = [];
+            this.stopAnimation();
+            animationIsGoing = false;
+            this.position = {
+                center: {x: 0, y: 0},
+                scale: options.scale,
+                angle: options.angle,
+                rotationCenter: Object.assign({x: 0, y: 0}, options.rotationCenter)
+            }
         }
     }
     

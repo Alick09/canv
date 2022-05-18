@@ -22,6 +22,8 @@ interface iTouchPosition {
 
 interface iCanvasControllOptions {
     ctrlWheelRotate?: boolean;
+    wheelRotate?: boolean;
+    ctrlWheelScale?: boolean;
     scaleForce?: number;
     rotateForce?: number;
 }
@@ -97,7 +99,7 @@ interface iCanvasControllConfig {
 export const installCanvasControll = (space: iSpace, options?: iCanvasControllOptions) => {
     space.canvas.style.touchAction = 'none';
     space.canvas.style.userSelect = 'none';
-    const options_ = options || {};
+    const options_ = Object.assign({wheelRotate: true, ctrlWheelScale: true}, options || {});
 
     const config: iCanvasControllConfig = {
         startPos: {x: 0, y: 0},
@@ -106,7 +108,7 @@ export const installCanvasControll = (space: iSpace, options?: iCanvasControllOp
     };
 
     // pos = (curPos - startPos)/scale + canvStartPos
-    
+
     const startMove = (pos: iPosition) => {
         config.startPos = pos;
         config.startCanvPos = Point(space.position.center || {x: 0, y: 0});
@@ -137,10 +139,10 @@ export const installCanvasControll = (space: iSpace, options?: iCanvasControllOp
     const scaleForce = options_.scaleForce || 0.05;
     const rotateForce = options_.rotateForce || 0.02;
     space.canvas.addEventListener('wheel', (e) => {
-        if (e.ctrlKey && options_.ctrlWheelRotate){
+        if (e.ctrlKey && options_.ctrlWheelRotate || (!e.ctrlKey && options_.wheelRotate)){
             const dAngle = e.deltaY > 0.1 ? rotateForce : e.deltaY < -0.1 ? -rotateForce: 0;
             rotate(dAngle, {x: e.offsetX, y: e.offsetY});
-        } else {
+        } else if (e.ctrlKey && options_.ctrlWheelScale || (!e.ctrlKey && options_.ctrlWheelRotate)) {
             scale(e.deltaY > 0.1 ? 1 - scaleForce : e.deltaY < -0.1 ? (1/(1 - scaleForce)): 1);
         }
         e.preventDefault();

@@ -2,9 +2,9 @@ import {Space} from 'canv';
 import {genRectGrid} from './utils/gen';
 
 
-window.onload = () => {
+export const simpleDemo = (canvas) => {
     let direction = 1;
-    const s = Space(document.getElementById('canvas'), {animationTick(ts){
+    const s = Space(canvas, {animationTick(ts){
         const {scale, angle} = this.position;
         if (scale > 2)
             direction = -1;

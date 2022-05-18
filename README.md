@@ -10,6 +10,8 @@
 </p>
 
 
+## Demo page: [Demo](https://alick09.github.io/canv/)
+
 # Introduction
 
 This package is very simple with no dependencies and will help to implement a lot of useful features on canvas.
