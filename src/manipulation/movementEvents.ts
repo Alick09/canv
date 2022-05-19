@@ -26,6 +26,7 @@ export interface iCanvasMoveOptions {
     ctrlWheelScale?: boolean;
     scaleForce?: number;
     rotateForce?: number;
+    enable?: ()=>boolean;
 }
 
 const installTouchEvents = (space: iSpace, {startMove, endMove, move, scale, rotate}: iTouchEventOptions) => {
@@ -107,7 +108,10 @@ interface iCallbacks {
 export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: iCanvasMoveOptions) => {
     space.canvas.style.touchAction = 'none';
     space.canvas.style.userSelect = 'none';
-    const options_ = Object.assign({wheelRotate: true, ctrlWheelScale: true}, options || {});
+    const options_ = Object.assign({
+        wheelRotate: true, ctrlWheelScale: true,
+        enable(){ return true; }
+    }, options || {});
 
     const config: iCanvasControllConfig = {
         startPos: {x: 0, y: 0},
@@ -118,18 +122,20 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
     // pos = (curPos - startPos)/scale + canvStartPos
 
     const startMove = (pos: iPosition) => {
-        config.startPos = pos;
-        config.startCanvPos = Point(space.position.center || {x: 0, y: 0});
-        if (callbacks.startMove){
-            config.moving = callbacks.startMove(pos);
-            space.draw();
-        }
-        else {
-            config.moving = true;
+        if (options_.enable()){
+            config.startPos = pos;
+            config.startCanvPos = Point(space.position.center || {x: 0, y: 0});
+            if (callbacks.startMove){
+                config.moving = callbacks.startMove(pos);
+                space.draw();
+            }
+            else {
+                config.moving = true;
+            }
         }
     };
     const move = (pos: iPosition) => {
-        if (config.moving){
+        if (config.moving && options_.enable()){
             const scale = (space.position.scale || 1);
             const shift = Point(pos).sub(config.startPos).mul(1/scale);
             if (callbacks.move){
@@ -139,20 +145,22 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
         }
     };
     const endMove = () => {
-        config.moving = false;
-        if (callbacks.endMove){
-            callbacks.endMove();
-            space.draw();
+        if (options_.enable()){
+            config.moving = false;
+            if (callbacks.endMove){
+                callbacks.endMove();
+                space.draw();
+            }
         }
     };
     const scale = (factor: number) => {
-        if (callbacks.scale){
+        if (callbacks.scale && options_.enable()){
             callbacks.scale(factor);
             space.draw();
         }
     };
     const rotate = (dAngle: number, rotationCenter: iPosition) => {
-        if (callbacks.rotate){
+        if (callbacks.rotate && options_.enable()){
             callbacks.rotate(dAngle, rotationCenter);
             space.draw();
         }
