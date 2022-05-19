@@ -19,6 +19,7 @@ export interface iDrawable {
     children?: iDrawable[];
     checkInside?: tCheckInside;
     selectable?: boolean;
+    movable?: boolean;
     fixedOrientation?: boolean;
     fixedPosition?: boolean;
     onClick?: (pos: iPosition) => void;
@@ -34,6 +35,7 @@ export interface iObject {
     parent?: iObject | iSpace;
     orig: iDrawable;
     selectable: boolean;
+    movable: boolean;
     data: any;
     getSpace: () => iSpace;
     position: iPositioning;
@@ -91,6 +93,7 @@ export const createObject = (drawable: iDrawable): iObject => {
         orig: drawable,
         inAnimationLoop: false,
         selectable: drawable.selectable || false,
+        movable: drawable.movable || false,
         position: pos,
         data: drawable.data,
         draw(ctx: CanvasRenderingContext2D){
@@ -126,7 +129,7 @@ export const createObject = (drawable: iDrawable): iObject => {
         },
         transform(position: iPosition) {
             const point = this.parent ? this.parent.transform(position) : position;
-            return transform(point, pos);
+            return transform(point, this.position);
         },
         animate({animation, force=false, putToQueue=false}) {
             if (force || !this.inAnimationLoop){

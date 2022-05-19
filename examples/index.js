@@ -5,6 +5,7 @@ import { selectionDemo } from './selection';
 import { spriteDemo } from './sprite';
 import { spriteAnimationDemo } from './spriteAnimation';
 import { mapDemo } from './map';
+import { movingDemo } from './movingObjects';
 
 const demoCollection = {
     simple: simpleDemo,
@@ -12,7 +13,8 @@ const demoCollection = {
     selection: selectionDemo,
     sprite: spriteDemo,
     spriteAnimation: spriteAnimationDemo,
-    map: mapDemo
+    map: mapDemo,
+    movingObjects: movingDemo
 }
 
 window.onload = () => {
