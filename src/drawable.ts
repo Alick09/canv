@@ -1,5 +1,5 @@
 import { tAnimationFunc } from './animation';
-import {iPosition, iPositioning, prepareContext, transform} from './positioning';
+import {backTransform, iPosition, iPositioning, prepareContext, transform} from './positioning';
 import {iSpace} from './space';
 
 
@@ -48,6 +48,7 @@ export interface iObject {
     clickable: ()=>boolean;
     selected: (val?:boolean) => boolean;
     transform: (position: iPosition) => iPosition;
+    backTransform: (position: iPosition) => iPosition;
     animate: (options: iAnimateOptions) => void;
     applyAnimation: tAnimationFunc;
     stopAnimation: (all?: boolean) => void;
@@ -134,6 +135,10 @@ export const createObject = (drawable: iDrawable): iObject => {
         transform(position: iPosition) {
             const point = this.parent ? this.parent.transform(position) : position;
             return transform(point, this.position);
+        },
+        backTransform(position: iPosition) {
+            const point = backTransform(position, this.position);
+            return this.parent ? this.parent.backTransform(point) : point;
         },
         animate({animation, force=false, putToQueue=false}) {
             if (force || !this.inAnimationLoop){

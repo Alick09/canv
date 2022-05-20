@@ -34,6 +34,11 @@ export const transform = (pos: iPosition, setting: iPositioning, shift?: iPositi
     );
 }
 
+export const backTransform = (pos: iPosition, setting: iPositioning, shift?: iPosition): iPosition => {
+    const {center={x: 0, y: 0}, scale=1.0, angle=0, rotationCenter={x: 0, y: 0}} = setting;
+    return Point(rotate(pos, rotationCenter, angle)).mul(scale).add(shift || {x: 0, y: 0}).add(center);
+}
+
 export const prepareContext = (ctx: CanvasRenderingContext2D, 
     {center, angle, rotationCenter, scale}: iPositioning, shift?: iPosition) =>
 {

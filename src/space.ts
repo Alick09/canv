@@ -1,5 +1,5 @@
 import {createObject, iDrawable, iObject} from './drawable';
-import {iPositioning, iPosition, transform, prepareContext} from './positioning';
+import {iPositioning, iPosition, transform, prepareContext, backTransform} from './positioning';
 
 export interface iSpace {
     canvas: HTMLCanvasElement;
@@ -12,6 +12,7 @@ export interface iSpace {
     position: iPositioning;
     triggerAnimation: () => void;
     transform: (pos: iPosition) => iPosition;
+    backTransform: (pos: iPosition) => iPosition;
     options: iSpaceOptions;
     stopAnimation: () => void;
     reset: () => void;
@@ -137,6 +138,11 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         transform(point: iPosition) {
             const scale = this.pixelRatio;
             return transform({x: point.x * scale, y: point.y * scale}, actualPos(), shift());
+        },
+        backTransform(point: iPosition) {
+            const scale = this.pixelRatio;
+            const result = backTransform({x: point.x, y: point.y}, actualPos(), shift());
+            return {x: result.x / scale, y: result.y / scale};
         },
         reset(){
             this.objects = [];
