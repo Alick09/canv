@@ -1,6 +1,6 @@
 import { iObject } from "../drawable";
 import { iPoint, Point } from "../point";
-import { changeRotationCenter, iPosition } from "../positioning";
+import { changeRotationCenter, iPosition, iPositioning } from "../positioning";
 import { iSpace } from "../space"
 import { setupMoveEvents, iCanvasMoveOptions } from "./movementEvents";
 import { findUnderTouch } from "./search";
@@ -10,11 +10,16 @@ interface iMoveConfig {
     object?: iObject
 }
 
+type tChangedMap = {
+    [key: string]: iPositioning;
+}
+
 export const installMoveObjects = (space: iSpace, options?: iCanvasMoveOptions) => {
     const config: iMoveConfig = {
         pos: Point(),
         object: undefined,
     }
+    let changed: tChangedMap = {};
     return {
         ...setupMoveEvents(space, {
             startMove(pos: iPosition){
@@ -29,8 +34,10 @@ export const installMoveObjects = (space: iSpace, options?: iCanvasMoveOptions) 
                 return false;
             },
             move(pos: iPosition, shift: iPosition){
-                if (config.object)
+                if (config.object){
                     config.object.position.center = config.pos.add(shift);
+                    changed[config.object.id] = config.object.position;
+                }
             },
             endMove(){
                 config.object = undefined;
@@ -48,6 +55,7 @@ export const installMoveObjects = (space: iSpace, options?: iCanvasMoveOptions) 
                 }
             }
         }, options),
-
+        getChanged(){ return changed; },
+        resetChanged(){ changed = {}; }
     }
 };
