@@ -72,6 +72,6 @@ export const animationDemo = (canvas) => {
     animatable.push(s.addDrawable(makeObject(0, -500)));
     s.addDrawable(makeController());
     installClicks(s, {});
-    installCanvasControll(s, {wheelRotate: false});
+    installCanvasControll(s, {disableRotation: true});
     s.draw();
 };

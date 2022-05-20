@@ -14,7 +14,7 @@ const makeImage = (x, y, spriteDrawer) => {
 
 
 export const spriteAnimationDemo = (canvas) => {
-    const s = Space(canvas, {scale: 0.6});
+    const s = Space(canvas, {scale: 0.4});
     s.addDrawable(createGridCells({mainStep: 200}));
     s.addDrawable(makeImage(0, -200, SpriteDrawer({url: "./resources/bunny_animation.png", space: s})));
     const anim = s.addDrawable(makeImage(0, 200, SpriteDrawer({

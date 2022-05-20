@@ -7,11 +7,11 @@ export const movingDemo = (canvas) => {
     genRectGrid().forEach(d => s.addDrawable({
         selectable: true,
         movable: true,
-        angle: Math.random(), scale: Math.random() + 0.5, 
+        angle: Math.random(), scale: Math.random() + 0.5,
         ...d
     }));
     installSelection(s);
-    const mo = installMoveObjects(s, {});
-    installCanvasControll(s, {wheelRotate: false, enable: () => !mo.moving()});
+    const mo = installMoveObjects(s, {disableRotation: true});
+    installCanvasControll(s, {disableRotation: true, enable: () => !mo.moving()});
     s.draw();
 };

@@ -10,6 +10,6 @@ export const selectionDemo = (canvas) => {
         ...d
     }));
     installSelection(s);
-    installCanvasControll(s, {wheelRotate: false});
+    installCanvasControll(s);
     s.draw();
 };
