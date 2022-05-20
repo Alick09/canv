@@ -8,9 +8,12 @@ interface iChooseOptions {
     firstIfMany?: boolean
 }
 
+type tObjHandler = (obj?:iObject) => void;
+
 export const installSelection = (space: iSpace, options?: iChooseOptions) => {
     options = options || {firstIfMany: false};
     const {firstIfMany} = options;
+    const handlers: tObjHandler[] = [];
     addPosEvenListener(space, 'click', (pos: iPosition) => {
         let result = findUnderTouch({
             space, pos, getFirst: firstIfMany, filter: o=>o.selectable,
@@ -18,10 +21,13 @@ export const installSelection = (space: iSpace, options?: iChooseOptions) => {
         });
         if (result !== null)
             result.selected(true);
+        handlers.forEach(h => h(result || undefined));
         space.draw();
     });
     const resp = {
-        
+        onSelected(func: (obj?:iObject) => void){
+            handlers.push(func);
+        }
     };
     return resp;
 };

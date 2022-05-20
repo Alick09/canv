@@ -11,6 +11,7 @@ export interface iDrawable {
     x: number;
     y: number;
     draw: tDrawFunction;
+    id?: string;
     data?: any;
     angle?: number;
     scale?: number;
@@ -32,6 +33,7 @@ interface iAnimateOptions {
 }
 
 export interface iObject {
+    id: string;
     parent?: iObject | iSpace;
     orig: iDrawable;
     selectable: boolean;
@@ -49,6 +51,7 @@ export interface iObject {
     animate: (options: iAnimateOptions) => void;
     applyAnimation: tAnimationFunc;
     stopAnimation: (all?: boolean) => void;
+    resetPosition: () => void;
 };
 
 interface iCurrentAnimation {
@@ -89,6 +92,7 @@ export const createObject = (drawable: iDrawable): iObject => {
     }
 
     return {
+        id: drawable.id || (Math.random() + 1).toString(36).substring(2),
         parent: undefined,
         orig: drawable,
         inAnimationLoop: false,
@@ -162,6 +166,14 @@ export const createObject = (drawable: iDrawable): iObject => {
                 }
             }
             return this.inAnimationLoop;
+        },
+        resetPosition() {
+            Object.assign(this.position, {
+                center: {x: drawable.x || 0, y: drawable.y || 0},
+                angle: drawable.angle,
+                scale: drawable.scale,
+                rotationCenter: drawable.rotationCenter
+            });
         }
     }
 }
