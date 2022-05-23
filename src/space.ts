@@ -122,9 +122,10 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
                 console.warn('Set animationTick in space options to make animation work. Ignoring launch.');
             } else {
                 const _space = this;
+                const _startTs = Date.now();
                 const tick = () => {
                     if (this.options.animationTick){
-                        this.options.animationTick.call(_space, 0);
+                        this.options.animationTick.call(_space, Date.now() - _startTs);
                         this.draw();
                         requestAnimationFrame(tick);
                     }
