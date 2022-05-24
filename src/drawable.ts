@@ -23,6 +23,7 @@ export interface iDrawable {
     movable?: boolean;
     fixedOrientation?: boolean;
     fixedPosition?: boolean;
+    fixedScale?: boolean;
     onClick?: (pos: iPosition) => void;
 };
 
@@ -92,6 +93,26 @@ export const createObject = (drawable: iDrawable): iObject => {
         }
     }
 
+    function getPosition(this: iObject) : iPositioning{
+        const result: iPositioning = {
+            ...this.position,
+        };
+        const fixed = {
+            angle: this.orig.fixedOrientation,
+            center: this.orig.fixedPosition,
+            scale: this.orig.fixedScale
+        }
+        if (fixed.angle || fixed.center || fixed.scale){
+            const space = this.getSpace();
+            if (space){
+                if (fixed.angle){
+                    result.angle = (result.angle || 0) - (space.position?.angle || 0);
+                }
+            }
+        }
+        return result;
+    }
+
     return {
         id: drawable.id || (Math.random() + 1).toString(36).substring(2),
         parent: undefined,
@@ -102,7 +123,8 @@ export const createObject = (drawable: iDrawable): iObject => {
         position: pos,
         data: drawable.data,
         draw(ctx: CanvasRenderingContext2D){
-            prepareContext(ctx, this.position);
+            const newPosition = getPosition.call(this);
+            prepareContext(ctx, newPosition);
             return drawable.draw.call(this, ctx);
         },
         getSpace(){
