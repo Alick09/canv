@@ -4,6 +4,7 @@ import {iPositioning, iPosition, transform, prepareContext, backTransform} from 
 export interface iSpace {
     canvas: HTMLCanvasElement;
     objects: iObject[];
+    allObjects: () => iObject[];
     pixelRatio: number;
     addObject: (obj: iObject) => iObject;
     addDrawable: (drawable: iDrawable) => iObject;
@@ -75,7 +76,7 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
     const animateObjects = () => {
         const ts = Date.now();
         let animationAlive = false;
-        space.objects.forEach(o => {
+        space.allObjects().forEach(o => {
             if (o.applyAnimation(ts))
                 animationAlive = true;
         });
@@ -87,15 +88,26 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
             animationIsGoing = false;
     };
 
+    let objectCache: iObject[] | null = null;
+
     const space: iSpace = {
         options,
         canvas,
         objects: [],
+        allObjects(){
+            if (!objectCache){
+                objectCache = this.objects.reduce((acc, o)=>{
+                    return acc.concat(o.plainObjects());
+                }, [] as iObject[])
+            }
+            return objectCache;
+        },
         pixelRatio: 1,
         position: pos,
         addObject(obj: iObject){
             obj.parent = this;
             this.objects.push(obj);
+            objectCache = null;
             return obj;
         },
         addDrawable(drawable: iDrawable){

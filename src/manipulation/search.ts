@@ -12,7 +12,7 @@ interface iFind {
 
 export const findUnderTouch = ({space, pos, filter, prepare, getFirst=false} : iFind): iObject | null => {
     let result: iObject | null = null;
-    space.objects.forEach(o => {
+    space.allObjects().forEach(o => {
         prepare ? prepare(o) : null;
         if ((!getFirst || result == null) && (!filter || filter(o)) && o.checkInside(pos))
             result = o;

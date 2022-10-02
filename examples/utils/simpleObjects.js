@@ -3,7 +3,7 @@ export const circle = (radius, color) => {
         draw(ctx) {
             ctx.beginPath();
             ctx.arc(0, 0, radius, 0, Math.PI * 2);
-            ctx.fillStyle = color;
+            ctx.fillStyle = this.selected() ? '#f00' : color;
             ctx.fill();
             ctx.closePath();
         },

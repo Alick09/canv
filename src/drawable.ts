@@ -45,6 +45,7 @@ export interface iObject {
     draw: tDrawFunction;
     checkInside: tCheckInside;
     inAnimationLoop: boolean;
+    children?: iObject[];
     click: ()=>void;
     clickable: ()=>boolean;
     selected: (val?:boolean) => boolean;
@@ -54,6 +55,7 @@ export interface iObject {
     applyAnimation: tAnimationFunc;
     stopAnimation: (all?: boolean) => void;
     resetPosition: () => void;
+    plainObjects: () => iObject[];
 };
 
 interface iCurrentAnimation {
@@ -113,7 +115,7 @@ export const createObject = (drawable: iDrawable): iObject => {
         return result;
     }
 
-    return {
+    const res: iObject = {
         id: drawable.id || (Math.random() + 1).toString(36).substring(2),
         parent: undefined,
         orig: drawable,
@@ -122,10 +124,18 @@ export const createObject = (drawable: iDrawable): iObject => {
         movable: drawable.movable || false,
         position: pos,
         data: drawable.data,
+        children: undefined,
         draw(ctx: CanvasRenderingContext2D){
             const newPosition = getPosition.call(this);
             prepareContext(ctx, newPosition);
-            return drawable.draw.call(this, ctx);
+            drawable.draw.call(this, ctx);
+            if (this.children){
+                this.children.forEach(c=>{
+                    ctx.save();
+                    c.draw(ctx);
+                    ctx.restore();
+                });
+            }
         },
         getSpace(){
             if (!this.parent)
@@ -201,6 +211,20 @@ export const createObject = (drawable: iDrawable): iObject => {
                 scale: drawable.scale,
                 rotationCenter: drawable.rotationCenter
             });
+        },
+        plainObjects() {
+            const res = [this];
+            if (this.children)
+                this.children.forEach(c=>res.push(...c.plainObjects()));
+            return res;
         }
+    };
+    if (drawable.children){
+        res.children = drawable.children.map(c=>{
+            const obj = createObject(c);
+            obj.parent = res;
+            return obj;
+        });
     }
+    return res;
 }
