@@ -223,6 +223,7 @@ export const createObject = (drawable: iDrawable): iObject => {
             return res;
         },
         addObject(o: iObject){
+            this.getSpace().resetObjectCache();
             o.parent = this;
             if (!this.children){
                 this.children = [];
@@ -235,6 +236,7 @@ export const createObject = (drawable: iDrawable): iObject => {
             return this.addObject(obj);
         },
         spliceObject(index: number, deleteAmount: number, o: iObject) {
+            this.getSpace().resetObjectCache();
             o.parent = this;
             if (!this.children){
                 this.children = [];

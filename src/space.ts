@@ -15,6 +15,7 @@ export interface iSpace {
     transform: (pos: iPosition) => iPosition;
     backTransform: (pos: iPosition) => iPosition;
     options: iSpaceOptions;
+    resetObjectCache: () => void;
     stopAnimation: () => void;
     reset: () => void;
 };
@@ -104,10 +105,13 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         },
         pixelRatio: 1,
         position: pos,
+        resetObjectCache(){
+            objectCache = null;
+        },
         addObject(obj: iObject){
             obj.parent = this;
             this.objects.push(obj);
-            objectCache = null;
+            this.resetObjectCache();
             return obj;
         },
         addDrawable(drawable: iDrawable){
