@@ -58,6 +58,8 @@ export interface iObject {
     plainObjects: () => iObject[];
     addObject: (o: iObject) => iObject;
     addDrawable: (c: iDrawable) => iObject;
+    spliceObject: (index: number, deleteAmount: number, o: iObject) => iObject;
+    spliceDrawable: (index: number, deleteAmount: number, c: iDrawable) => iObject;
 };
 
 interface iCurrentAnimation {
@@ -222,11 +224,27 @@ export const createObject = (drawable: iDrawable): iObject => {
         },
         addObject(o: iObject){
             o.parent = this;
+            if (!this.children){
+                this.children = [];
+            }
+            this.children.push(o);
             return o;
         },
         addDrawable(c: iDrawable) {
             const obj = createObject(c);
             return this.addObject(obj);
+        },
+        spliceObject(index: number, deleteAmount: number, o: iObject) {
+            o.parent = this;
+            if (!this.children){
+                this.children = [];
+            }
+            this.children.splice(index, deleteAmount, o);
+            return o;
+        },
+        spliceDrawable(index: number, deleteAmount: number, c: iDrawable) {
+            const obj = createObject(c);
+            return this.spliceObject(index, deleteAmount, obj);
         }
     };
     if (drawable.children){
