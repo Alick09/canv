@@ -56,6 +56,8 @@ export interface iObject {
     stopAnimation: (all?: boolean) => void;
     resetPosition: () => void;
     plainObjects: () => iObject[];
+    addObject: (o: iObject) => iObject;
+    addDrawable: (c: iDrawable) => iObject;
 };
 
 interface iCurrentAnimation {
@@ -217,6 +219,14 @@ export const createObject = (drawable: iDrawable): iObject => {
             if (this.children)
                 this.children.forEach(c=>res.push(...c.plainObjects()));
             return res;
+        },
+        addObject(o: iObject){
+            o.parent = this;
+            return o;
+        },
+        addDrawable(c: iDrawable) {
+            const obj = createObject(c);
+            return this.addObject(obj);
         }
     };
     if (drawable.children){
