@@ -135,8 +135,8 @@ export const createObject = (drawable: iDrawable): iObject => {
             prepareContext(ctx, newPosition);
             drawable.draw.call(this, ctx);
             if (this.children){
-                ctx.save();
                 this.children.forEach(c=>{
+                    ctx.save();
                     c.draw(ctx);
                     ctx.restore();
                 });
