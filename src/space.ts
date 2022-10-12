@@ -120,8 +120,8 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         draw(){
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             prepareContext(ctx, actualPos(), shift());
+            ctx.save();
             this.objects.forEach(o => {
-                ctx.save();
                 o.draw(ctx);
                 ctx.restore();
             });

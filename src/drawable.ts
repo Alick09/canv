@@ -25,6 +25,7 @@ export interface iDrawable {
     fixedPosition?: boolean;
     fixedScale?: boolean;
     onClick?: (pos: iPosition) => void;
+    objRef?: iObject;
 };
 
 interface iAnimateOptions {
@@ -134,8 +135,8 @@ export const createObject = (drawable: iDrawable): iObject => {
             prepareContext(ctx, newPosition);
             drawable.draw.call(this, ctx);
             if (this.children){
+                ctx.save();
                 this.children.forEach(c=>{
-                    ctx.save();
                     c.draw(ctx);
                     ctx.restore();
                 });
@@ -249,6 +250,7 @@ export const createObject = (drawable: iDrawable): iObject => {
             return this.spliceObject(index, deleteAmount, obj);
         }
     };
+    drawable.objRef = res;
     if (drawable.children){
         res.children = drawable.children.map(c=>{
             const obj = createObject(c);
