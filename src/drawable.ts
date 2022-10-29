@@ -1,15 +1,14 @@
-import { tAnimationFunc } from './animation';
-import {backTransform, iPosition, iPositioning, prepareContext, transform} from './positioning';
+import {tAnimationFunc} from './animation';
+import {backTransform, iPosition, iPositioning, prepareContext, tNumberCallable, transform} from './positioning';
 import {iSpace} from './space';
 
 
 type tDrawFunction = (ctx: CanvasRenderingContext2D) => void;
 type tCheckInside = (pos: iPosition) => boolean;
 
-
 export interface iDrawable {
-    x: number;
-    y: number;
+    x: number | tNumberCallable;
+    y: number | tNumberCallable;
     draw: tDrawFunction;
     id?: string;
     data?: any;

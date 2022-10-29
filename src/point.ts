@@ -1,4 +1,4 @@
-import { iPosition } from "./positioning";
+import { getPos, iDynamicPosition, iPosition } from "./positioning";
 
 export interface iPoint extends iPosition {
     add: (other: iPosition) => iPoint;
@@ -6,8 +6,8 @@ export interface iPoint extends iPosition {
     mul: (alpha: number) => iPoint;
 }
 
-export const Point = (p?: iPosition): iPoint => {
-    const p_ = p || {x: 0, y: 0};
+export const Point = (p?: iDynamicPosition): iPoint => {
+    const p_ = getPos(p || {x: 0, y: 0});
     return {
         ...p_,
         add(other: iPosition){

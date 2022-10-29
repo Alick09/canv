@@ -1,5 +1,5 @@
 import {createObject, iDrawable, iObject} from './drawable';
-import {iPositioning, iPosition, transform, prepareContext, backTransform} from './positioning';
+import {iPositioning, iPosition, transform, prepareContext, backTransform, getPos} from './positioning';
 
 export interface iSpace {
     canvas: HTMLCanvasElement;
@@ -61,13 +61,14 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
     const actualPos = () => {
         const pos = space.position;
         const scale = (space.position.scale || 1) * space.pixelRatio;
+        const center = getPos(pos.center || {x: 0, y: 0});
         return {
             ...pos, scale,
-            center: {x: (pos.center?.x || 0) * scale, y: (pos.center?.y || 0) * scale}
+            center: {x: center.x * scale, y: center.y * scale}
         };
     };
 
-    const center = options.center || {x: 0, y: 0};
+    const center = getPos(options.center || {x: 0, y: 0});
     const shift = () => {
         const scale = (space.position.scale || 1) * space.pixelRatio;
         return {x: canvas.width/2 - scale * center.x, y: canvas.height/2 - scale * center.y}

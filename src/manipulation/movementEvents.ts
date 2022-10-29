@@ -151,7 +151,7 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
         if (options_.enable()){
             options_.onMoveStart(pos);
             config.startPos = pos;
-            config.startCanvPos = Point(space.position.center || {x: 0, y: 0});
+            config.startCanvPos = Point(space.position.center);
             if (callbacks.startMove){
                 config.moving = callbacks.startMove(pos);
                 space.draw();

@@ -1,15 +1,29 @@
 import { Point } from "./point";
 
+export type tNumberCallable = () => number;
+
+export interface iDynamicPosition {
+    x: number | tNumberCallable;
+    y: number | tNumberCallable;
+};
+
 export interface iPosition {
     x: number;
     y: number;
 };
 
 export interface iPositioning {
-    center?: iPosition;
+    center?: iDynamicPosition;
     angle?: number;
     rotationCenter?: iPosition;
     scale?: number;
+};
+
+export const getPos = (pos: iDynamicPosition): iPosition => {
+    const getValue = (v: number | tNumberCallable) => {
+        return (typeof v =='function') ? v() : v;
+    };
+    return {x: getValue(pos.x), y: getValue(pos.y)};
 };
 
 const rotate = (point: iPosition, anchor: iPosition, angle: number): iPosition => {
@@ -29,21 +43,23 @@ const rotate = (point: iPosition, anchor: iPosition, angle: number): iPosition =
 export const transform = (pos: iPosition, setting: iPositioning, shift?: iPosition): iPosition => {
     const {center={x: 0, y: 0}, scale=1.0, angle=0, rotationCenter={x: 0, y: 0}} = setting;
     return rotate(
-        Point(pos).sub(center).sub(shift || {x: 0, y: 0}).mul(1/scale), 
+        Point(pos).sub(getPos(center)).sub(shift || {x: 0, y: 0}).mul(1/scale), 
         rotationCenter, -angle
     );
 }
 
 export const backTransform = (pos: iPosition, setting: iPositioning, shift?: iPosition): iPosition => {
     const {center={x: 0, y: 0}, scale=1.0, angle=0, rotationCenter={x: 0, y: 0}} = setting;
-    return Point(rotate(pos, rotationCenter, angle)).mul(scale).add(shift || {x: 0, y: 0}).add(center);
+    return Point(rotate(pos, rotationCenter, angle)).mul(scale).add(shift || {x: 0, y: 0}).add(getPos(center));
 }
 
 export const prepareContext = (ctx: CanvasRenderingContext2D, 
     {center, angle, rotationCenter, scale}: iPositioning, shift?: iPosition) =>
 {
-    if (center)
-        ctx.translate(center.x, center.y);
+    if (center){
+        const c = getPos(center)
+        ctx.translate(c.x, c.y);
+    }
     if (shift)
         ctx.translate(shift.x, shift.y);
     if (scale)
@@ -65,10 +81,11 @@ export const changeRotationCenter = (newCenter: iPosition, setting: iPositioning
     else {
         const shifted = rotate(newCenter, setting.rotationCenter, setting.angle);
         const shift = {x: shifted.x - newCenter.x, y: shifted.y - newCenter.y};
+        const center = getPos(setting.center || {x: 0, y: 0});
         Object.assign(setting, {
             center: {
-                x: (setting.center?.x || 0) + shift.x, 
-                y: (setting.center?.y || 0) + shift.y
+                x: center.x + shift.x, 
+                y: center.y + shift.y
             },
             rotationCenter: newCenter,
         });
