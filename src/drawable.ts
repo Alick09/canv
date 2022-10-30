@@ -40,6 +40,7 @@ export interface iObject {
     selectable: boolean;
     movable: boolean;
     data: any;
+    visible: boolean;
     getSpace: () => iSpace;
     position: iPositioning;
     draw: tDrawFunction;
@@ -127,18 +128,21 @@ export const createObject = (drawable: iDrawable): iObject => {
         selectable: drawable.selectable || false,
         movable: drawable.movable || false,
         position: pos,
+        visible: true,
         data: drawable.data,
         children: undefined,
         draw(ctx: CanvasRenderingContext2D){
-            const newPosition = getPosition.call(this);
-            prepareContext(ctx, newPosition);
-            drawable.draw.call(this, ctx);
-            if (this.children){
-                this.children.forEach(c=>{
-                    ctx.save();
-                    c.draw(ctx);
-                    ctx.restore();
-                });
+            if (this.visible){
+                const newPosition = getPosition.call(this);
+                prepareContext(ctx, newPosition);
+                drawable.draw.call(this, ctx);
+                if (this.children){
+                    this.children.forEach(c=>{
+                        ctx.save();
+                        c.draw(ctx);
+                        ctx.restore();
+                    });
+                }
             }
         },
         getSpace(){
@@ -149,7 +153,7 @@ export const createObject = (drawable: iDrawable): iObject => {
             return this.parent;
         },
         checkInside(pos: iPosition) {
-            if (!drawable.checkInside)
+            if (!drawable.checkInside || !this.visible)
                 return false;
             const objectPosition = this.transform(pos);
             const isInside = drawable.checkInside.call(this, objectPosition);
