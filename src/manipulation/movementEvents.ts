@@ -1,5 +1,5 @@
 import { iPoint, Point } from "../point";
-import { changeRotationCenter, iPosition, transform } from "../positioning";
+import { iPosition } from "../positioning";
 import { iSpace } from "../space";
 import { addPosEventListener } from "./events";
 
