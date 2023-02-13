@@ -2,12 +2,15 @@ import { iObject } from "../drawable";
 import { iPosition } from "../positioning";
 import { iSpace } from "../space";
 
-interface iFind {
+interface iGetAll {
     space: iSpace;
     pos: iPosition;
     filter?: (obj: iObject) => boolean;
-    getFirst?: boolean;
     prepare?: (obj: iObject) => boolean;
+}
+
+interface iFind extends iGetAll {
+    getFirst?: boolean;
 }
 
 export const findUnderTouch = ({space, pos, filter, prepare, getFirst=false} : iFind): iObject | null => {
@@ -18,4 +21,11 @@ export const findUnderTouch = ({space, pos, filter, prepare, getFirst=false} : i
             result = o;
     });
     return result;
+}
+
+export const allUnderTouch = ({space, pos, filter, prepare}: iGetAll): iObject[] => {
+    return space.allObjects().filter(o => {
+        prepare ? prepare(o) : null;
+        return (!filter || filter(o)) && o.checkInside(pos);
+    });
 }
