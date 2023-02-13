@@ -2,7 +2,7 @@ import { iPosition } from "../positioning";
 import { iObject } from "../drawable";
 import { iSpace } from "../space"
 import { findUnderTouch } from "./search";
-import { addPosEvenListener } from "./events";
+import { addPosEventListener } from "./events";
 
 interface iChooseOptions {
     firstIfMany?: boolean
@@ -14,7 +14,7 @@ export const installSelection = (space: iSpace, options?: iChooseOptions) => {
     options = options || {firstIfMany: false};
     const {firstIfMany} = options;
     const handlers: tObjHandler[] = [];
-    addPosEvenListener(space, 'click', (pos: iPosition) => {
+    addPosEventListener(space, 'click', (pos: iPosition) => {
         let result = findUnderTouch({
             space, pos, getFirst: firstIfMany, filter: o=>o.selectable,
             prepare: (o) => o.selected(false)
@@ -36,7 +36,7 @@ export const installSelection = (space: iSpace, options?: iChooseOptions) => {
 export const installClicks = (space: iSpace, options?: iChooseOptions) => {
     options = options || {firstIfMany: false};
     const {firstIfMany} = options;
-    addPosEvenListener(space, 'click', (pos: iPosition) => {
+    addPosEventListener(space, 'click', (pos: iPosition) => {
         let result = findUnderTouch({
             space, pos, getFirst: firstIfMany, filter: o=>o.clickable(),
         });

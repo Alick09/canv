@@ -1,7 +1,7 @@
 import { iPoint, Point } from "../point";
 import { changeRotationCenter, iPosition, transform } from "../positioning";
 import { iSpace } from "../space";
-import { addPosEvenListener } from "./events";
+import { addPosEventListener } from "./events";
 
 type tPosHandler = (pos: iPosition) => void;
 
@@ -216,9 +216,9 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
         }
         e.preventDefault();
     });
-    addPosEvenListener(space, 'mousedown', startMove);
-    addPosEvenListener(space, 'mouseup', endMove);
-    addPosEvenListener(space, 'mousemove', move);
+    addPosEventListener(space, 'mousedown', startMove);
+    addPosEventListener(space, 'mouseup', endMove);
+    addPosEventListener(space, 'mousemove', move);
     installTouchEvents(space, {startMove, move, endMove, rotate, scale}, options_.rotationThreshold);
     return {
         moving(){ return config.moving; }
