@@ -14,7 +14,11 @@ type tChangedMap = {
     [key: string]: iPositioning;
 }
 
-export const installMoveObjects = (space: iSpace, options?: iCanvasMoveOptions) => {
+interface iMoveObjectsOptions extends iCanvasMoveOptions {
+    posConstraint?: (newPos: iPoint) => iPoint;
+}
+
+export const installMoveObjects = (space: iSpace, options?: iMoveObjectsOptions) => {
     const config: iMoveConfig = {
         pos: Point(),
         object: undefined,
@@ -35,7 +39,8 @@ export const installMoveObjects = (space: iSpace, options?: iCanvasMoveOptions) 
             },
             move(pos: iPosition, shift: iPosition){
                 if (config.object){
-                    config.object.position.center = config.pos.add(shift);
+                    const newPos = config.pos.add(shift);
+                    config.object.position.center = options?.posConstraint ? options.posConstraint(newPos) : newPos;
                     changed[config.object.id] = config.object.position;
                 }
             },
