@@ -15,7 +15,7 @@ type tChangedMap = {
 }
 
 interface iMoveObjectsOptions extends iCanvasMoveOptions {
-    posConstraint?: (newPos: iPoint) => iPoint;
+    posConstraint?: (newPos: iPosition, object: iObject) => iPosition;
 }
 
 export const installMoveObjects = (space: iSpace, options?: iMoveObjectsOptions) => {
@@ -40,7 +40,7 @@ export const installMoveObjects = (space: iSpace, options?: iMoveObjectsOptions)
             move(pos: iPosition, shift: iPosition){
                 if (config.object){
                     const newPos = config.pos.add(shift);
-                    config.object.position.center = options?.posConstraint ? options.posConstraint(newPos) : newPos;
+                    config.object.position.center = options?.posConstraint ? options.posConstraint(newPos, config.object) : newPos;
                     changed[config.object.id] = config.object.position;
                 }
             },
