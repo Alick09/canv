@@ -12,8 +12,8 @@ export interface iSpace {
     launch: () => void;
     position: iPositioning;
     triggerAnimation: () => void;
-    transform: (pos: iPosition) => iPosition;
-    backTransform: (pos: iPosition) => iPosition;
+    transform: (pos: iPosition, relativeTo?: iObject | iSpace) => iPosition;
+    backTransform: (pos: iPosition, relativeTo?: iObject | iSpace) => iPosition;
     options: iSpaceOptions;
     resetObjectCache: () => void;
     stopAnimation: () => void;
@@ -153,11 +153,15 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
         stopAnimation() {
             this.options.animationTick = undefined;
         },
-        transform(point: iPosition) {
+        transform(point: iPosition, relativeTo?: iObject | iSpace) {
+            if (relativeTo && 'canvas' in relativeTo)
+                return point;
             const scale = this.pixelRatio;
             return transform({x: point.x * scale, y: point.y * scale}, actualPos(), shift());
         },
-        backTransform(point: iPosition) {
+        backTransform(point: iPosition, relativeTo?: iObject | iSpace) {
+            if (relativeTo && 'canvas' in relativeTo)
+                return point;
             const scale = this.pixelRatio;
             const result = backTransform({x: point.x, y: point.y}, actualPos(), shift());
             return {x: result.x / scale, y: result.y / scale};

@@ -50,8 +50,8 @@ export interface iObject {
     click: ()=>void;
     clickable: ()=>boolean;
     selected: (val?:boolean) => boolean;
-    transform: (position: iPosition) => iPosition;
-    backTransform: (position: iPosition) => iPosition;
+    transform: (position: iPosition, relativeTo?: iObject | iSpace) => iPosition;
+    backTransform: (position: iPosition, relativeTo?: iObject | iSpace) => iPosition;
     animate: (options: iAnimateOptions) => void;
     applyAnimation: tAnimationFunc;
     stopAnimation: (all?: boolean) => void;
@@ -172,11 +172,15 @@ export const createObject = (drawable: iDrawable): iObject => {
         clickable() {
             return drawable.onClick !== undefined;
         },
-        transform(position: iPosition) {
+        transform(position: iPosition, relativeTo?: iObject | iSpace) {
+            if (relativeTo && 'selectable' in relativeTo && relativeTo.id == this.id)
+                return position;
             const point = this.parent ? this.parent.transform(position) : position;
             return transform(point, this.position);
         },
-        backTransform(position: iPosition) {
+        backTransform(position: iPosition, relativeTo?: iObject | iSpace) {
+            if (relativeTo && 'selectable' in relativeTo && relativeTo.id == this.id)
+                return position;
             const point = backTransform(position, this.position);
             return this.parent ? this.parent.backTransform(point) : point;
         },
