@@ -16,6 +16,7 @@ export interface iDrawable {
     scale?: number;
     rotationCenter?: iPosition;
     hidden?: boolean;
+    visible?: boolean | (()=>boolean);
     children?: iDrawable[];
     checkInside?: tCheckInside;
     selectable?: boolean;
@@ -40,7 +41,7 @@ export interface iObject {
     selectable: boolean;
     movable: boolean;
     data: any;
-    visible: boolean;
+    visible: boolean | (()=>boolean);
     getSpace: () => iSpace;
     position: iPositioning;
     draw: tDrawFunction;
@@ -120,6 +121,10 @@ export const createObject = (drawable: iDrawable): iObject => {
         return result;
     }
 
+    const isVisible = (obj: iObject)=>{
+        return typeof obj.visible =='function' ? obj.visible() : obj.visible;
+    }
+
     const res: iObject = {
         id: drawable.id || (Math.random() + 1).toString(36).substring(2),
         parent: undefined,
@@ -128,11 +133,11 @@ export const createObject = (drawable: iDrawable): iObject => {
         selectable: drawable.selectable || false,
         movable: drawable.movable || false,
         position: pos,
-        visible: true,
+        visible: drawable.visible || true,
         data: drawable.data,
         children: undefined,
         draw(ctx: CanvasRenderingContext2D){
-            if (this.visible){
+            if (isVisible(this)){
                 const newPosition = getPosition.call(this);
                 prepareContext(ctx, newPosition);
                 drawable.draw.call(this, ctx);
@@ -153,7 +158,7 @@ export const createObject = (drawable: iDrawable): iObject => {
             return this.parent;
         },
         checkInside(pos: iPosition) {
-            if (!drawable.checkInside || !this.visible)
+            if (!drawable.checkInside || !isVisible(this))
                 return false;
             const objectPosition = this.transform(pos);
             const isInside = drawable.checkInside.call(this, objectPosition);
