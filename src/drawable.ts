@@ -83,7 +83,8 @@ export const createObject = (drawable: iDrawable): iObject => {
         throw TypeError("Drawable should have checkInside method to be selectable");
     
     const core = {
-        selected: false
+        selected: false,
+        space: null as iSpace | null
     };
 
     const lastInside: iPosition = {x: 0, y: 0};
@@ -153,11 +154,14 @@ export const createObject = (drawable: iDrawable): iObject => {
             }
         },
         getSpace(){
-            if (!this.parent)
-                throw ReferenceError("Couldn't traverse to space from object. Parent is null.");
-            if ('selectable' in this.parent)
-                return this.parent.getSpace();
-            return this.parent;
+            if (!core.space){
+                if (!this.parent)
+                    throw ReferenceError("Couldn't traverse to space from object. Parent is null.");
+                if ('selectable' in this.parent)
+                    core.space = this.parent.getSpace();
+                core.space = this.parent as iSpace;
+            }
+            return core.space;
         },
         checkInside(pos: iPosition) {
             if (!drawable.checkInside || !isVisible(this))

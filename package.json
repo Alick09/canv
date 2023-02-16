@@ -1,6 +1,6 @@
 {
   "name": "canv",
-  "version": "1.5.10",
+  "version": "1.5.11",
   "description": "canvas interactive tool",
   "homepage": "https://github.com/Alick09/canv#readme",
   "bugs": {
@@ -15,7 +15,8 @@
   "scripts": {
     "build": "webpack",
     "watch": "webpack --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "canvas",
