@@ -140,7 +140,9 @@ export const createObject = (drawable: iDrawable): iObject => {
             if (isVisible(this)){
                 const newPosition = getPosition.call(this);
                 prepareContext(ctx, newPosition);
+                ctx.save();
                 drawable.draw.call(this, ctx);
+                ctx.restore();
                 if (this.children){
                     this.children.forEach(c=>{
                         ctx.save();
