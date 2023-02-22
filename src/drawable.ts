@@ -159,7 +159,8 @@ export const createObject = (drawable: iDrawable): iObject => {
                     throw ReferenceError("Couldn't traverse to space from object. Parent is null.");
                 if ('selectable' in this.parent)
                     core.space = this.parent.getSpace();
-                core.space = this.parent as iSpace;
+                else
+                    core.space = this.parent as iSpace;
             }
             return core.space;
         },
