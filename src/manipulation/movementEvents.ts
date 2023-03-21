@@ -117,6 +117,9 @@ interface iCanvasControllConfig {
     startPos: iPosition;
     startCanvPos: iPoint;
     moving: boolean;
+    lastContinuousMove: number;
+    continuousPoint: iPoint;
+    continuousMoving: boolean;
 }
 
 interface iCallbacks {
@@ -143,6 +146,9 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
         startPos: {x: 0, y: 0},
         startCanvPos: Point({x: 0, y: 0}),
         moving: false,
+        lastContinuousMove: 0,
+        continuousPoint: Point(),
+        continuousMoving: false
     };
 
     // pos = (curPos - startPos)/scale + canvStartPos
@@ -182,6 +188,28 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
             }
         }
     };
+    const continuousMove = (pos: iPosition, shift: iPosition) => {
+        if (!config.continuousMoving && callbacks.startMove){
+            config.continuousMoving = callbacks.startMove(pos);
+            config.continuousPoint = Point(pos);
+            config.startPos = pos;
+            space.draw();
+        }
+        if (callbacks.move){
+            const scale = (space.position.scale || 1);
+            config.continuousPoint = config.continuousPoint.add(shift);
+            callbacks.move(config.startPos, config.continuousPoint.sub(config.startPos).mul(1/scale));
+            space.draw();
+        }
+        config.lastContinuousMove = Date.now();
+        setTimeout(()=>{
+            if (Date.now() - config.lastContinuousMove > 150){
+                if (callbacks.endMove)
+                    callbacks.endMove();
+                config.continuousMoving = false;
+            }
+        }, 200);
+    };
     const scale = (factor: number) => {
         if (!options_.disableScale && callbacks.scale && options_.enable()){
             callbacks.scale(factor);
@@ -197,8 +225,11 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
 
     const scaleForce = options_.scaleForce || 0.05;
     const rotateForce = options_.rotateForce || 0.02;
+    const platform = (navigator as any)?.userAgentData?.platform || navigator?.platform || "unknown";
+    const isMac = platform.toLowerCase().indexOf('mac') >= 0;
+    console.log(platform);
     space.canvas.addEventListener('wheel', (e) => {
-        const ops = {rotate: 1, scale: 2, nothing: 3};
+        const ops = {rotate: 1, scale: 2, move: 3, nothing: 4};
         const op = (()=>{
             if (options_.ctrlWheelRotate && e.ctrlKey)
                 return ops.rotate;
@@ -206,13 +237,15 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
                 return ops.scale;
             if (options_.wheelRotate && !e.ctrlKey)
                 return ops.rotate;
-            return ops.scale;
+            return isMac ? ops.move : ops.nothing;
         })();
         if (op == ops.rotate){
             const dAngle = e.deltaY > 0.1 ? rotateForce : e.deltaY < -0.1 ? -rotateForce: 0;
             rotate(dAngle, {x: e.offsetX, y: e.offsetY});
         } else if (op == ops.scale) {
             scale(e.deltaY > 0.1 ? 1 - scaleForce : e.deltaY < -0.1 ? (1/(1 - scaleForce)): 1);
+        } else if (op == ops.move) {
+            continuousMove({x: e.offsetX, y: e.offsetY}, {x: -e.deltaX, y: -e.deltaY});
         }
         e.preventDefault();
     });
