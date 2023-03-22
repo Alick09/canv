@@ -159,7 +159,6 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
         }
         e.preventDefault();
     });
-    console.log('a');
     addPosEventListener(space, 'mousedown', startMove);
     addPosEventListener(space, 'mouseup', endMove);
     addPosEventListener(space, 'mousemove', move);
