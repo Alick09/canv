@@ -1,4 +1,4 @@
-import {Space, SpriteDrawer, installCanvasControll} from 'canv';
+import {Space, SpriteDrawer, installCanvasControll, onLongPress} from 'canv';
 import { createGridCells } from './utils/gen';
 
 
@@ -23,5 +23,6 @@ export const spriteDemo = (canvas) => {
         </svg>    
     `, space: s})));
     installCanvasControll(s, {disableRotation: true});
+    onLongPress(s, {handler: (pos)=>{alert(`Long: ${pos}`);}})
     s.draw();
 };

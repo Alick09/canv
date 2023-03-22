@@ -2,23 +2,7 @@ import { iPoint, Point } from "../point";
 import { iPosition } from "../positioning";
 import { iSpace } from "../space";
 import { addPosEventListener } from "./events";
-
-type tPosHandler = (pos: iPosition) => void;
-
-interface iTouchEventOptions {
-    startMove: tPosHandler;
-    endMove: () => void;
-    move: tPosHandler;
-    scale: (factor: number) => void;
-    rotate: (dAngle: number, rotationCenter: iPosition) => void;
-}
-
-interface iTouchPosition {
-    center?: iPosition;
-    rotate?: number;
-    distance?: number;
-    count: number;
-}
+import { installTouchEvents } from "./touch";
 
 export interface iCanvasMoveOptions {
     ctrlWheelRotate?: boolean;
@@ -29,89 +13,13 @@ export interface iCanvasMoveOptions {
     rotationThreshold?: number;
     disableRotation?: boolean;
     disableScale?: boolean;
+    leftMouseButtonOnly?: boolean;
+    disableMacWheelMove?: boolean;
     enable?: ()=>boolean;
     onMoveStart?: (pos: iPosition) => void;
     onMove?: (pos: iPosition) => void;
     onMoveEnd?: () => void;
 }
-
-const installTouchEvents = (space: iSpace, 
-    {startMove, endMove, move, scale, rotate}: iTouchEventOptions, 
-    rotationThreshold: number) => 
-{
-    const position: iTouchPosition = {
-        center: undefined,
-        rotate: undefined,
-        distance: undefined,
-        count: 0,
-    };
-    const rotation = {
-        angleAccum: 0,
-        enabled: false
-    };
-    const canvasPos = space.canvas.getBoundingClientRect();
-    const getPosition = (touches: TouchList) => {
-        const firstTwo = Array.from(touches)
-            .filter((t: Touch) => t.identifier < 2)
-            .sort((a, b) => a.identifier - b.identifier)
-            .map((t: Touch) => ({x: t.clientX - canvasPos.x, y: t.clientY - canvasPos.y}));
-        if (firstTwo.length == 0) {
-            return {center: undefined, rotate: undefined, distance: undefined};
-        }
-        const accum = firstTwo.reduce((acc, t) => ({x: acc.x + t.x, y: acc.y + t.y}), {x: 0, y: 0});
-        const twoConf: iTouchPosition = {
-            distance: undefined,
-            rotate: undefined,
-            count: firstTwo.length
-        };
-        if (firstTwo.length > 1){
-            const d = {x: firstTwo[0].x - firstTwo[1].x, y: firstTwo[0].y - firstTwo[1].y};
-            twoConf.distance = Math.hypot(d.x, d.y);
-            twoConf.rotate = Math.atan2(d.y, d.x);
-        }
-        return {
-            center: {x: accum.x / firstTwo.length, y: accum.y / firstTwo.length},
-            ...twoConf
-        }
-    }
-
-    const handleTouchEvent = (e: TouchEvent, name: string) => {
-        const pos = getPosition(e.touches);
-        if (position.distance && pos.distance)
-            scale(pos.distance / position.distance);
-        if (position.rotate && pos.rotate){
-            rotation.angleAccum += pos.rotate - position.rotate;
-            if (rotation.enabled)
-                rotate(pos.rotate - position.rotate, pos.center);
-            else if (Math.abs(rotation.angleAccum) > rotationThreshold)
-                rotation.enabled = true;
-        }
-        else {
-            if (!pos.rotate)
-                Object.assign(rotation, {angleAccum: 0, enabled: false});
-            if (pos.center && !position.center)
-                startMove(pos.center);
-            else if (!pos.center && position.center)
-                endMove();
-            else if (pos.center && position.center){
-                if (pos.count !== position.count)
-                    startMove(pos.center);
-                else
-                    move(pos.center);
-            }
-        }
-        
-        Object.assign(position, pos);
-    }
-
-    space.canvas.addEventListener('touchstart', (e) => handleTouchEvent(e, 'start'));
-    space.canvas.addEventListener('touchend', (e) => handleTouchEvent(e, 'end'));
-    space.canvas.addEventListener('touchcancel', (e) => handleTouchEvent(e, 'cancel'));
-    space.canvas.addEventListener('touchmove', (e) => handleTouchEvent(e, 'move'));
-    return {
-
-    };
-};
 
 interface iCanvasControllConfig {
     startPos: iPosition;
@@ -139,7 +47,9 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
         enable(){ return true; },
         onMoveStart(pos: iPosition){},
         onMove(pos: iPosition){},
-        onMoveEnd(){}
+        onMoveEnd(){},
+        leftMouseButtonOnly: true,
+        disableMacWheelMove: false
     }, options || {});
 
     const config: iCanvasControllConfig = {
@@ -153,8 +63,8 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
 
     // pos = (curPos - startPos)/scale + canvStartPos
 
-    const startMove = (pos: iPosition) => {
-        if (options_.enable()){
+    const startMove = (pos: iPosition, e?: MouseEvent) => {
+        if (options_.enable() && (!e || !options_.leftMouseButtonOnly || e.button == 0)){
             options_.onMoveStart(pos);
             config.startPos = pos;
             config.startCanvPos = Point(space.position.center);
@@ -227,7 +137,6 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
     const rotateForce = options_.rotateForce || 0.02;
     const platform = (navigator as any)?.userAgentData?.platform || navigator?.platform || "unknown";
     const isMac = platform.toLowerCase().indexOf('mac') >= 0;
-    console.log(platform);
     space.canvas.addEventListener('wheel', (e) => {
         const ops = {rotate: 1, scale: 2, move: 3, nothing: 4};
         const op = (()=>{
@@ -237,7 +146,7 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
                 return ops.scale;
             if (options_.wheelRotate && !e.ctrlKey)
                 return ops.rotate;
-            return isMac ? ops.move : ops.nothing;
+            return isMac && !options_.disableMacWheelMove ? ops.move : ops.nothing;
         })();
         if (op == ops.rotate){
             const dAngle = e.deltaY > 0.1 ? rotateForce : e.deltaY < -0.1 ? -rotateForce: 0;
@@ -245,15 +154,17 @@ export const setupMoveEvents = (space: iSpace, callbacks: iCallbacks, options?: 
         } else if (op == ops.scale) {
             scale(e.deltaY > 0.1 ? 1 - scaleForce : e.deltaY < -0.1 ? (1/(1 - scaleForce)): 1);
         } else if (op == ops.move) {
-            continuousMove({x: e.offsetX, y: e.offsetY}, {x: -e.deltaX, y: -e.deltaY});
+            const factor = 0.7;
+            continuousMove({x: e.offsetX, y: e.offsetY}, {x: -e.deltaX * factor, y: -e.deltaY * factor});
         }
         e.preventDefault();
     });
+    console.log('a');
     addPosEventListener(space, 'mousedown', startMove);
     addPosEventListener(space, 'mouseup', endMove);
     addPosEventListener(space, 'mousemove', move);
     installTouchEvents(space, {startMove, move, endMove, rotate, scale}, options_.rotationThreshold);
     return {
-        moving(){ return config.moving; }
+        moving(){ return config.moving || config.continuousMoving; }
     }
 }

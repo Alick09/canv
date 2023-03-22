@@ -59,7 +59,9 @@ export const installMoveObjects = (space: iSpace, options?: iMoveObjectsOptions)
                     config.object.position.angle = (config.object.position.angle || 0) + dAngle;
                 }
             }
-        }, options),
+        }, Object.assign({
+            disableMacWheelMove: true
+        }, options)),
         getChanged(){ return changed; },
         resetChanged(){ changed = {}; }
     }

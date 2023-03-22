@@ -5,6 +5,7 @@ export {installCanvasControll} from './manipulation/canvas';
 export {addPosEventListener} from './manipulation/events';
 export {installMoveObjects} from './manipulation/move';
 export {setupMoveEvents} from './manipulation/movementEvents';
+export {onLongPress} from './manipulation/touch';
 export {SpriteDrawer} from './sprite';
 
 // interfaces
