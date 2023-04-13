@@ -5,18 +5,23 @@ import { findUnderTouch } from "./search";
 import { addPosEventListener } from "./events";
 
 interface iChooseOptions {
-    firstIfMany?: boolean
+    firstIfMany?: boolean,
+    filter?: (o: iObject)=>boolean;
 }
 
 type tObjHandler = (obj?:iObject) => void;
 
-export const installSelection = (space: iSpace, options?: iChooseOptions) => {
-    options = options || {firstIfMany: false};
-    const {firstIfMany} = options;
+export const installSelection = (space: iSpace, options: iChooseOptions = {}) => {
+    options = Object.assign(
+        {
+            firstIfMany: false, 
+            filter: (o: iObject)=>o.selectable
+        }, options
+    );
     const handlers: tObjHandler[] = [];
     addPosEventListener(space, 'click', (pos: iPosition) => {
         let result = findUnderTouch({
-            space, pos, getFirst: firstIfMany, filter: o=>o.selectable,
+            space, pos, getFirst: options.firstIfMany, filter: options.filter,
             prepare: (o) => o.selected(false)
         });
         if (result !== null)
@@ -33,12 +38,16 @@ export const installSelection = (space: iSpace, options?: iChooseOptions) => {
 };
 
 
-export const installClicks = (space: iSpace, options?: iChooseOptions) => {
-    options = options || {firstIfMany: false};
-    const {firstIfMany} = options;
+export const installClicks = (space: iSpace, options: iChooseOptions = {}) => {
+    options = Object.assign(
+        {
+            firstIfMany: false, 
+            filter: (o: iObject)=>o.clickable()
+        }, options
+    );
     addPosEventListener(space, 'click', (pos: iPosition) => {
         let result = findUnderTouch({
-            space, pos, getFirst: firstIfMany, filter: o=>o.clickable(),
+            space, pos, getFirst: options.firstIfMany, filter: options.filter,
         });
         if (result !== null)
             result.click();
