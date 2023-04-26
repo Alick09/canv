@@ -7,6 +7,7 @@ export {installMoveObjects} from './manipulation/move';
 export {setupMoveEvents} from './manipulation/movementEvents';
 export {onLongPress} from './manipulation/touch';
 export {SpriteDrawer} from './sprite';
+export {getPos} from './positioning';
 
 // interfaces
 export {iObject, iDrawable} from './drawable';
