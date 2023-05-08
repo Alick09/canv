@@ -13,3 +13,4 @@ export {getPos} from './positioning';
 export {iObject, iDrawable} from './drawable';
 export {iSpace} from './space';
 export {iPosition} from './positioning';
+export {iMoveConfig} from './manipulation/move';

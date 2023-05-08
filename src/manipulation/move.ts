@@ -5,7 +5,7 @@ import { iSpace } from "../space"
 import { setupMoveEvents, iCanvasMoveOptions } from "./movementEvents";
 import { findUnderTouch } from "./search";
 
-interface iMoveConfig {
+export interface iMoveConfig {
     pos: iPoint;
     object?: iObject
 }
@@ -16,6 +16,7 @@ type tChangedMap = {
 
 interface iMoveObjectsOptions extends iCanvasMoveOptions {
     posConstraint?: (newPos: iPosition, object: iObject) => iPosition;
+    onObjectMove?: (conf: iMoveConfig, stage: "start" | "end" | "move") => void;
 }
 
 export const installMoveObjects = (space: iSpace, options?: iMoveObjectsOptions) => {
@@ -33,6 +34,9 @@ export const installMoveObjects = (space: iSpace, options?: iMoveObjectsOptions)
                         pos: Point(object.position.center),
                         object
                     });
+                    if (options && options.onObjectMove){
+                        options.onObjectMove(config, "start");
+                    }
                     return true;
                 };
                 return false;
@@ -42,9 +46,15 @@ export const installMoveObjects = (space: iSpace, options?: iMoveObjectsOptions)
                     const newPos = config.pos.add(shift);
                     config.object.position.center = options?.posConstraint ? options.posConstraint(newPos, config.object) : newPos;
                     changed[config.object.id] = config.object.position;
+                    if (options && options.onObjectMove){
+                        options.onObjectMove(config, "move");
+                    }
                 }
             },
             endMove(){
+                if (config.object && options && options.onObjectMove){
+                    options.onObjectMove(config, "end");
+                }
                 config.object = undefined;
             },
             scale(factor: number){
