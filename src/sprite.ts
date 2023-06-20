@@ -34,7 +34,7 @@ interface iSpriteAnimation {
 
 interface iSpriteDrawerOptions {
     url?: string;
-    content?: string;
+    content?: string | SVGElement;
     base64?: string;
     crop?: iCrop;
     dataType?: string;
@@ -45,6 +45,8 @@ interface iSpriteDrawerOptions {
 };
 
 interface iSpriteDrawer {
+    url: string;
+    reloadImage: (props?: iSpriteDrawerOptions) => void;
     loaded: boolean;
     frame?: tFrameProps;
     animationConfig?: iSpriteAnimation;
@@ -62,7 +64,10 @@ const getImageUrl = ({url, content, base64, dataType='image/svg+xml'}: iSpriteDr
 
     let b64 = base64;
     if (!b64 && content){
-        b64 = btoa(content);
+        if (content instanceof SVGElement)
+            b64 = window.btoa(content.outerHTML);
+        else
+            b64 = window.btoa(content);
     }
     return `data:${dataType};base64,${b64}`;
 }
@@ -74,7 +79,6 @@ export const SpriteDrawer = ({
     }: iSpriteDrawerOptions): iSpriteDrawer => 
 {
     const img = new Image(size.w ? size.w : undefined, size.h ? size.h : undefined);
-    const url = getImageUrl(options);
 
     const _drawLoading = drawLoading || ((ctx: CanvasRenderingContext2D) => {
         ctx.beginPath();
@@ -109,6 +113,14 @@ export const SpriteDrawer = ({
         loaded: false,
         frame: undefined,
         animationConfig,
+        url: getImageUrl(options),
+        reloadImage(props?: iSpriteDrawerOptions){
+            if (props)
+                this.url = getImageUrl(props);
+            else
+                this.url = getImageUrl(options);
+            img.src = this.url;
+        },
         draw(ctx: CanvasRenderingContext2D) {
             if (!this.loaded)
                 _drawLoading(ctx);
@@ -145,7 +157,7 @@ export const SpriteDrawer = ({
         if (space)
             space.draw();
     };
-    img.src = url;
+    img.src = result.url;
 
     return result;
 }
