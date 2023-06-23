@@ -24,26 +24,30 @@ This is main features:
 * Objects can contain children and it would work as you expect
 * There are many options for objects to make them work as you want
 
+# Installation
+```
+npm install canv
+```
 
 # Quick example
 
 ```js
-    import {Space} from 'canv';
+import {Space} from 'canv';
 
-    window.onload = () => {
-        const s = Space(document.getElementById('canvas'), {scale: 0.7});
-        s.addDrawable({
-            x: 0, y: 0,
-            draw(ctx){
-                ctx.beginPath();
-                ctx.fillStyle = '#000';
-                ctx.rect(-100, -100, 200, 200);
-                ctx.fill();
-                ctx.closePath();
-            }
-        });
-        s.draw();
-    };
+window.onload = () => {
+    const s = Space(document.getElementById('canvas'), {scale: 0.7});
+    s.addDrawable({
+        x: 0, y: 0,
+        draw(ctx){
+            ctx.beginPath();
+            ctx.fillStyle = '#000';
+            ctx.rect(-100, -100, 200, 200);
+            ctx.fill();
+            ctx.closePath();
+        }
+    });
+    s.draw();
+};
 ```
 
 
