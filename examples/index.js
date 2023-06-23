@@ -7,6 +7,7 @@ import { spriteAnimationDemo } from './spriteAnimation';
 import { mapDemo } from './map';
 import { movingDemo } from './movingObjects';
 import { childrenDemo } from './children';
+import { gameDemo } from './game';
 
 const demoCollection = {
     simple: simpleDemo,
@@ -16,7 +17,8 @@ const demoCollection = {
     spriteAnimation: spriteAnimationDemo,
     map: mapDemo,
     movingObjects: movingDemo,
-    children: childrenDemo
+    children: childrenDemo,
+    game: gameDemo
 }
 
 window.onload = () => {

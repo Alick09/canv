@@ -19,6 +19,13 @@ export interface iPositioning {
     scale?: number;
 };
 
+export interface iBBox {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+};
+
 export const getPos = (pos: iDynamicPosition): iPosition => {
     const getValue = (v: number | tNumberCallable) => {
         return (typeof v =='function') ? v() : v;

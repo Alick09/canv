@@ -1,5 +1,7 @@
 import {createObject, iDrawable, iObject} from './drawable';
-import {iPositioning, iPosition, transform, prepareContext, backTransform, getPos} from './positioning';
+import {iPositioning, iPosition, transform, prepareContext, backTransform, getPos, iBBox} from './positioning';
+
+type tBBoxPoly = [iPosition, iPosition, iPosition, iPosition];
 
 export interface iSpace {
     canvas: HTMLCanvasElement;
@@ -18,6 +20,8 @@ export interface iSpace {
     resetObjectCache: () => void;
     stopAnimation: () => void;
     reset: () => void;
+    getBBox: (internal?: boolean) => iBBox;
+    getBBoxPolygon: () => tBBoxPoly;
 };
 
 interface iSpaceOptions extends iPositioning {
@@ -176,7 +180,25 @@ export const Space = (canvas: HTMLCanvasElement, options: iSpaceOptions): iSpace
                 angle: options.angle,
                 rotationCenter: Object.assign({x: 0, y: 0}, options.rotationCenter)
             }
-        }
+        },
+        
+        getBBox(internal = false){
+            const leftTop = {x: 0, y: 0};
+            const rightBottom = {x: this.canvas.offsetWidth, y: this.canvas.offsetHeight};
+            if (!internal)
+                return {...leftTop, w: rightBottom.x, h: rightBottom.y};
+            const lt = this.transform(leftTop);
+            const rb = this.transform(rightBottom);
+            return {...lt, w: rb.x - lt.x, h: rb.y - lt.y};
+        },
+
+        getBBoxPolygon() {
+            const w = this.canvas.offsetWidth, h = this.canvas.offsetHeight;
+            const points = [
+                {x: 0, y: 0}, {x: w, y: 0}, {x: w, y: h}, {x: 0, y: h}
+            ];
+            return points.map(p => this.transform(p)) as tBBoxPoly;
+        },
     }
     
     space.pixelRatio = setupResizeHandler(space, options);

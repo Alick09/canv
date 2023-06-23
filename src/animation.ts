@@ -1,1 +1,1 @@
-export type tAnimationFunc = (ts: number) => boolean;
+export type tAnimationFunc = (ts: number, dt?: number) => boolean;

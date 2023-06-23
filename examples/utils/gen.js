@@ -66,3 +66,27 @@ export const range = (from_, to_, step = 1) => {
     }
     return result;
 };
+
+
+export const infiniteGrid = (space, gridSize=100) => {
+    return {
+        draw(ctx){
+            const bbox = space.getBBox(true);
+            const lx = (Math.round(bbox.x / gridSize) - 1) * gridSize;
+            const ty = (Math.round(bbox.y / gridSize) - 1) * gridSize;
+            ctx.strokeStyle = '#00000020';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            range(lx, bbox.x + bbox.w + 1, gridSize).forEach((x) => {
+                ctx.moveTo(x, bbox.y);
+                ctx.lineTo(x, bbox.y + bbox.h);
+            });
+            range(ty, bbox.y + bbox.h + 1, gridSize).forEach((y) => {
+                ctx.moveTo(bbox.x, y);
+                ctx.lineTo(bbox.x + bbox.w, y);
+            });
+            ctx.closePath();
+            ctx.stroke();
+        }
+    }
+};

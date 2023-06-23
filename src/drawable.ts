@@ -1,5 +1,5 @@
 import {tAnimationFunc} from './animation';
-import {backTransform, iPosition, iPositioning, prepareContext, tNumberCallable, transform} from './positioning';
+import {backTransform, getPos, iPosition, iPositioning, prepareContext, tNumberCallable, transform} from './positioning';
 import {iSpace} from './space';
 
 
@@ -68,6 +68,7 @@ interface iCurrentAnimation {
     func: tAnimationFunc;
     queue: tAnimationFunc[];
     start: number;
+    lastT: number;
 }
 
 
@@ -91,7 +92,8 @@ export const createObject = (drawable: iDrawable): iObject => {
     const currentAnimation: iCurrentAnimation = {
         func: (ts: number) => false,
         queue: [],
-        start: -1
+        start: -1,
+        lastT: 0
     };
 
     const setNextAnimation = (ts = -1) => {
@@ -116,6 +118,10 @@ export const createObject = (drawable: iDrawable): iObject => {
             if (space){
                 if (fixed.angle){
                     result.angle = (result.angle || 0) - (space.position?.angle || 0);
+                }
+                if (fixed.center && result.center){
+                    const pos = getPos(result.center);
+                    result.center = space.transform(pos);
                 }
             }
         }
@@ -218,7 +224,9 @@ export const createObject = (drawable: iDrawable): iObject => {
             if (currentAnimation.start < 0){
                 currentAnimation.start = ts;
             } else {
-                const alive = currentAnimation.func.call(this, ts - currentAnimation.start);
+                const relTs = ts - currentAnimation.start;
+                const alive = currentAnimation.func.call(this, relTs, relTs - currentAnimation.lastT);
+                currentAnimation.lastT = relTs;
                 if (!alive){
                     if (currentAnimation.queue.length == 0)
                         this.inAnimationLoop = false;
