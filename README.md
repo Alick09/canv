@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/npm/v/canv" alt="npm" />
+  <a href="https://www.npmjs.com/package/canv"><img src="https://img.shields.io/npm/v/canv" alt="npm" /></a>
   <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/Alick09/canv">
   <img src="https://img.shields.io/bundlephobia/minzip/canv" alt="npm bundle size" />
   <img src="https://img.shields.io/github/last-commit/Alick09/canv" alt="GitHub last commit" />
